@@ -98,8 +98,8 @@ const aboutContent = {
   },
   en: {
     heroTag: 'About Us',
-    heroTitle: 'Sutadhama Quizzie',
-    heroSubtitle: 'University of Wisdom Land annually holds the Sutadhama examinations for the perpetuation of the Sasana (the Buddhist teachings). The Sutadhama Quiz website is a free practice platform created for Dhamma friends across Myanmar who are attending the Sutadhama Diploma and B.A. courses, allowing them to practice in advance before their exams.',
+    heroTitle: 'Suta Dhama Quizzes',
+    heroSubtitle: 'University of Wisdom Land annually holds the Suta Dhama examinations for the perpetuation of the Sasana (the Buddhist teachings). The Suta Dhama Quizzes website is a free practice platform created for Dhamma friends across Myanmar who are attending the Suta Dhama Diploma and B.A. courses, allowing them to practice in advance before their exams.',
     objectiveTitle: 'Our Objective',
     objectiveDesc: 'We aim to enable Dhamma friends of all ages to conveniently and easily study and memorize Dhamma literature via their mobile phones or computers, without facing any technical difficulties. The platform is specially designed to be accessible for practice at any time without the need to create an account.',
     featuresTitle: 'Features of this Website',
@@ -118,14 +118,14 @@ const aboutContent = {
       },
       {
         title: 'Correct Answer Explanations',
-        desc: 'After completing a quiz, users can view their score as a percentage and check the correct answers along with detailed explanations.'
+        desc: 'After completing quizzes, users can view their score as a percentage and check the correct answers along with detailed explanations.'
       }
     ],
     goodwillTitle: 'Created with Goodwill',
     goodwillDesc: 'This system was created out of goodwill and faith as a Dhamma Dana (gift of Dhamma) by a university student who wishes to contribute to the community through technology.',
     disclaimerTitle: 'Disclaimer',
-    disclaimerDesc: 'This website is not directly affiliated with, endorsed, or approved by the relevant Sutadhama Examination Committee or any official organizations. All information and questions on this website are created solely for the purpose of sharing Dhamma knowledge and helping students practice for the Sutadhama Diploma and B.A. examinations. It has nothing to do with the official administration of the examinations.',
-    blessingText: 'May all Dhamma friends be able to take the Sutadhama exams smoothly and successfully, and may their wisdom and understanding of the Dhamma continue to grow.',
+    disclaimerDesc: 'This website is not directly affiliated with, endorsed, or approved by the relevant Suta Dhama Examination Committee or any official organizations. All information and questions on this website are created solely for the purpose of sharing Dhamma knowledge and helping students practice for the Suta Dhama Diploma and B.A. examinations. It has nothing to do with the official administration of the examinations.',
+    blessingText: 'May all Dhamma friends be able to take the Suta Dhama exams smoothly and successfully, and may their wisdom and understanding of the Dhamma continue to grow.',
     startPracticeBtn: 'Start Practicing Now'
   }
 };
@@ -693,7 +693,7 @@ export default function App() {
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-150 px-4 md:px-10 py-3.5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
 
-          {/* Left: Sutadhama Text Logo */}
+          {/* Left: Suta Dhama Text Logo */}
           <button
             onClick={() => { setCurrentScreen('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             className="flex items-center gap-3 group text-left cursor-pointer"
@@ -709,7 +709,7 @@ export default function App() {
                 သုတဓမ္မ ဉာဏ်စမ်း
               </span>
               <span className="text-xs md:text-sm font-semibold text-gray-500 tracking-wider">
-                SUTADHAMA QUIZ
+                SUTA DHAMA QUIZZES
               </span>
             </div>
           </button>
@@ -2426,7 +2426,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto flex items-center justify-center gap-2.5">
           <img src="Suta Logo.png" alt="Suta Logo" className="w-5 h-5 object-contain inline-block opacity-80" />
           <p className="text-gray-500">
-            © 2026 သုတဓမ္မ ဉာဏ်စမ်း (Sutadhama Quizzie), developed by{' '}
+            © 2026 သုတဓမ္မ ဉာဏ်စမ်း (Suta Dhama Quizzes), developed by{' '}
             <a 
               href="https://github.com/Sociopath345/sutadhama-quzzie" 
               target="_blank" 
