@@ -1,0 +1,25 @@
+# Environment and sensitive keys
+.env
+.env.*
+*.env
+
+# Question data and PDF syllabi (already stored in Supabase Cloud)
+*.pdf
+*.json
+backup_json_original/
+
+# Python extraction, processing scripts, and cache
+*.py
+*.pyc
+__pycache__/
+venv/
+.venv/
+
+# Database migration scripts (already executed in Supabase)
+*.sql
+
+# System / IDE artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
