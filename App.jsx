@@ -490,7 +490,7 @@ export default function App() {
     <div className="min-h-screen bg-[#FAF9F6] text-gray-900 flex flex-col font-['Pyidaungsu','Padauk','Noto_Sans_Myanmar',sans-serif] antialiased selection:bg-[#FF9933]/30">
 
       {/* ========================================================================= */}
-      {/* 1. NAVIGATION BAR (TOP - ITPEC STUDIO STYLE)                              */}
+      {/* 1. NAVIGATION BAR (TOP)                                                 */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-150 px-4 md:px-10 py-3.5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
