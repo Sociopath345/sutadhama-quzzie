@@ -19,7 +19,8 @@ import {
   X,
   Award,
   Home,
-  Check
+  Check,
+  User
 } from 'lucide-react';
 
 // =========================================================================
@@ -709,12 +710,13 @@ export default function App() {
           <div className="flex items-center gap-3 md:gap-5">
             {currentUser ? (
               <div className="flex items-center gap-2 md:gap-3">
-                <span 
-                  className="hidden sm:inline-block text-base font-semibold text-gray-700 bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-full truncate max-w-[200px]" 
-                  title={currentUser.email}
+                <div 
+                  className="w-11 h-11 rounded-full bg-[#800000] text-white flex items-center justify-center shadow-md border-2 border-amber-300/40 cursor-default transition-transform hover:scale-105" 
+                  title={currentUser.email || 'အကောင့်ဝင်ထားသည်'}
+                  aria-label="User Profile"
                 >
-                  {currentUser.email}
-                </span>
+                  <User size={22} className="stroke-[2.5]" />
+                </div>
                 <button
                   onClick={handleLogOut}
                   className="bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-700 font-bold text-lg md:text-xl px-4 py-1.5 rounded-xl border border-gray-300 hover:border-red-300 transition-colors cursor-pointer"
