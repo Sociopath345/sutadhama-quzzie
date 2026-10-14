@@ -8,6 +8,7 @@ backend/.env
 data/
 *.pdf
 *.json
+!vercel.json
 backup_json_original/
 
 # Backend extraction and processing scripts
