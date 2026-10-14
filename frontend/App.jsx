@@ -467,6 +467,14 @@ export default function App() {
     return sampledQuestions;
   };
 
+  const parseLevelNumber = (str) => {
+    if (!str) return 1;
+    const burmeseToArabic = { '၁': '1', '၂': '2', '၃': '3', '၄': '4', '၅': '5' };
+    const normalized = String(str).replace(/[၁၂၃၄၅]/g, (m) => burmeseToArabic[m] || m);
+    const num = parseInt(normalized.replace(/\D/g, ''), 10);
+    return isNaN(num) ? 1 : num;
+  };
+
   // Start / Load Quiz
   const handleStartQuiz = async () => {
     setQuizLoading(true);
@@ -476,7 +484,7 @@ export default function App() {
 
     try {
       const courseType = selectedCourse === 'diploma' ? 'Diploma' : 'BA';
-      const levelNum = parseInt(selectedLevel.replace(/\D/g, ''), 10) || 1;
+      const levelNum = parseLevelNumber(selectedLevel);
       const questions = await fetchProportionalQuestions(
         courseType,
         levelNum,
@@ -522,7 +530,7 @@ export default function App() {
 
     try {
       const courseType = selectedCourse === 'diploma' ? 'Diploma' : 'BA';
-      const levelNum = parseInt(levelName.replace(/\D/g, ''), 10) || 1;
+      const levelNum = parseLevelNumber(levelName);
 
       // Query Supabase questions table for unique/distinct chapter strings
       const { data, error } = await supabase
@@ -1287,12 +1295,12 @@ export default function App() {
               သုတဓမ္မ ဝိဇ္ဇာဘွဲ့တန်း
             </span>
             <h2 className="text-3xl md:text-5xl font-black text-[#800000]">
-              Part ရွေးချယ်ပါ
+              အပိုင်းရွေးချယ်ပါ
             </h2>
           </div>
 
           <div className="space-y-6">
-            {['Part 1', 'Part 2', 'Part 3'].map((prt) => (
+            {['အပိုင်း (၁)', 'အပိုင်း (၂)', 'အပိုင်း (၃)'].map((prt) => (
               <button
                 key={prt}
                 onClick={() => handleLevelSelect(prt)}

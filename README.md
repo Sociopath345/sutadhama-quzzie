@@ -8,9 +8,6 @@
   **ဓမ္မမိတ်ဆွေများ အလွယ်တကူ လေ့ကျင့်နိုင်သော ဗုဒ္ဓဓမ္မ ဉာဏ်စမ်းအစီအစဉ်**  
   *A peaceful, accessible, and mindful quiz companion for Buddhist learners*
 
-  [![GitHub Repository](https://img.shields.io/badge/GitHub-Sociopath345%2Fsutadhama--quzzie-800000?style=for-the-badge&logo=github)](https://github.com/Sociopath345/sutadhama-quzzie)
-  [![Dhamma Download](https://img.shields.io/badge/Library-DhammaDownload.com-FF9933?style=for-the-badge&logo=book)](https://dhammadownload.com/)
-
 </div>
 
 ---
@@ -73,11 +70,6 @@ sutadhama-quzzie/
 ├── README.md             # Project documentation
 └── .gitignore            # Git ignore configuration
 ```
-
----
-
-### 📖 ဆက်စပ် ဓမ္မစာအုပ်များ ဖတ်ရှုရန်
-သုတဓမ္မ သင်ရိုးစာအုပ်များ၊ မာတိကာများနှင့် တရားတော်များကို [Dhamma Download](https://dhammadownload.com/) ဝက်ဘ်ဆိုက်တွင် လွတ်လပ်စွာ ရယူဖတ်ရှုနိုင်ပါသည်။
 
 ---
 
