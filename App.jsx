@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import {
   ChevronLeft,
@@ -67,6 +67,131 @@ export default function App() {
   const [isPracticeDropdownOpen, setIsPracticeDropdownOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+
+  // Supabase Auth State
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authSuccess, setAuthSuccess] = useState('');
+
+  // Supabase Auth Session listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthSuccess('');
+
+    if (!loginEmail.trim() || !loginPassword) {
+      setAuthError('အီးမေးလ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါခင်ဗျာ။');
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail.trim(),
+        password: loginPassword,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setAuthError('အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+        } else {
+          setAuthError(error.message);
+        }
+      } else if (data?.user) {
+        setCurrentUser(data.user);
+        setShowAuthModal(false);
+        setLoginEmail('');
+        setLoginPassword('');
+      }
+    } catch (err) {
+      setAuthError('ချိတ်ဆက်မှု မအောင်မြင်ပါ။ နောက်မှ ထပ်မံကြိုးစားကြည့်ပါ။');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignUpSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthSuccess('');
+
+    if (!signupEmail.trim() || !signupPassword || !signupConfirmPassword) {
+      setAuthError('အချက်အလက်အားလုံးကို ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါခင်ဗျာ။');
+      return;
+    }
+
+    if (signupPassword !== signupConfirmPassword) {
+      setAuthError('စကားဝှက်များ တူညီမှု မရှိပါ။ ပြန်လည်စစ်ဆေးပေးပါ။');
+      return;
+    }
+
+    if (signupPassword.length < 6) {
+      setAuthError('စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။');
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: signupEmail.trim(),
+        password: signupPassword,
+      });
+
+      if (error) {
+        if (error.message.includes('already registered')) {
+          setAuthError('ဤအီးမေးလ်ဖြင့် အကောင့်ဖွင့်ပြီး ဖြစ်ပါသည်။');
+        } else {
+          setAuthError(error.message);
+        }
+      } else {
+        if (data?.session) {
+          setCurrentUser(data.session.user);
+          setAuthSuccess('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။');
+          setTimeout(() => {
+            setShowAuthModal(false);
+            setSignupEmail('');
+            setSignupPassword('');
+            setSignupConfirmPassword('');
+          }, 1200);
+        } else {
+          setAuthSuccess('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ သင့်အီးမေးလ်သို့ ပို့ထားသော အတည်ပြုလင့်ခ်ကို နှိပ်ပေးပါ။');
+        }
+      }
+    } catch (err) {
+      setAuthError('ချိတ်ဆက်မှု မအောင်မြင်ပါ။ နောက်မှ ထပ်မံကြိုးစားကြည့်ပါ။');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setCurrentUser(null);
+    } catch (err) {
+      console.error("Sign out error", err);
+    }
+  };
 
   // Quiz Configuration State
   const [selectedCourse, setSelectedCourse] = useState(null); // 'diploma' | 'ba'
@@ -580,21 +705,50 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Right: Secondary Login & Sign Up Links */}
+          {/* Right: Authentication Status & Actions */}
           <div className="flex items-center gap-3 md:gap-5">
-            <button
-              onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}
-              className="text-gray-600 hover:text-[#800000] font-semibold text-lg md:text-xl px-2 py-1 transition-colors"
-            >
-              Login
-            </button>
-            <span className="text-gray-300">|</span>
-            <button
-              onClick={() => { setAuthMode('signup'); setShowAuthModal(true); }}
-              className="text-gray-600 hover:text-[#800000] font-semibold text-lg md:text-xl px-2 py-1 transition-colors"
-            >
-              Sign Up
-            </button>
+            {currentUser ? (
+              <div className="flex items-center gap-2 md:gap-3">
+                <span 
+                  className="hidden sm:inline-block text-base font-semibold text-gray-700 bg-amber-50 border border-amber-200 px-3.5 py-1.5 rounded-full truncate max-w-[200px]" 
+                  title={currentUser.email}
+                >
+                  {currentUser.email}
+                </span>
+                <button
+                  onClick={handleLogOut}
+                  className="bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-700 font-bold text-lg md:text-xl px-4 py-1.5 rounded-xl border border-gray-300 hover:border-red-300 transition-colors cursor-pointer"
+                >
+                  ထွက်မည်
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 md:gap-4">
+                <button
+                  onClick={() => {
+                    setAuthMode('login');
+                    setAuthError('');
+                    setAuthSuccess('');
+                    setShowAuthModal(true);
+                  }}
+                  className="text-gray-700 hover:text-[#800000] font-bold text-lg md:text-xl px-2 py-1 transition-colors cursor-pointer"
+                >
+                  ဝင်မည်
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setAuthError('');
+                    setAuthSuccess('');
+                    setShowAuthModal(true);
+                  }}
+                  className="bg-[#800000] hover:bg-[#660000] text-white font-bold text-lg md:text-xl px-4 py-2 rounded-xl shadow-md transition-colors cursor-pointer"
+                >
+                  အကောင့်ဖွင့်မည်
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -1811,55 +1965,210 @@ export default function App() {
       )}
 
       {/* ========================================================================= */}
-      {/* AUTH MODAL (LOGIN / SIGN UP SECONDARY POPUP)                              */}
+      {/* AUTH MODAL (LOGIN / SIGN UP FLOW VIA SUPABASE AUTH)                       */}
       {/* ========================================================================= */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative border-2 border-gray-100">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-[#FAF9F6] rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-10 relative border-2 border-gray-200 my-8">
+            {/* Close Button */}
             <button
-              onClick={() => setShowAuthModal(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100"
+              onClick={() => {
+                setShowAuthModal(false);
+                setAuthError('');
+                setAuthSuccess('');
+              }}
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200 cursor-pointer"
+              aria-label="Close"
             >
-              <X size={26} />
+              <X size={28} />
             </button>
 
-            <img 
-              src="Suta Logo.png" 
-              alt="သုတဓမ္မ ဉာဏ်စမ်း Logo" 
-              className="w-16 h-16 mx-auto mb-3 object-contain drop-shadow" 
-            />
-            <h3 className="text-3xl font-extrabold text-[#800000] text-center mb-2">
-              {authMode === 'login' ? 'အကောင့်ဝင်ရန်' : 'အကောင့်အသစ်ဖွင့်ရန်'}
-            </h3>
-            <p className="text-gray-500 text-center mb-6 text-lg">
-              (မှတ်စု: ဉာဏ်စမ်းလေ့ကျင့်ရန် အကောင့်ဝင်ရန် မလိုအပ်ပါ)
-            </p>
+            {/* Logo & Header */}
+            <div className="text-center mb-6">
+              <img 
+                src="Suta Logo.png" 
+                alt="သုတဓမ္မ ဉာဏ်စမ်း Logo" 
+                className="w-20 h-20 mx-auto mb-3 object-contain drop-shadow" 
+              />
+              <h2 className="text-3xl sm:text-4xl font-black text-[#800000]">
+                {authMode === 'login' ? 'အကောင့်ဝင်ရန်' : 'အကောင့်အသစ်ဖွင့်ရန်'}
+              </h2>
+              <p className="text-gray-500 text-base sm:text-lg mt-1">
+                (မှတ်စု: ဉာဏ်စမ်းလေ့ကျင့်ရန် အကောင့်ဝင်ရန် မလိုအပ်ပါ)
+              </p>
+            </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); setShowAuthModal(false); }} className="space-y-4">
-              <div>
-                <label className="block text-lg font-semibold text-gray-700 mb-1">အီးမေးလ် / ဖုန်း</label>
-                <input
-                  type="text"
-                  placeholder="email@example.com"
-                  className="w-full p-4 text-lg border border-gray-300 rounded-xl outline-none focus:border-[#800000]"
-                />
-              </div>
-              <div>
-                <label className="block text-lg font-semibold text-gray-700 mb-1">စကားဝှက်</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full p-4 text-lg border border-gray-300 rounded-xl outline-none focus:border-[#800000]"
-                />
-              </div>
-
+            {/* Mode Switch Tabs */}
+            <div className="flex bg-gray-200/80 p-1.5 rounded-2xl mb-6">
               <button
-                type="submit"
-                className="w-full bg-[#800000] text-white py-4 rounded-xl text-xl font-bold hover:bg-[#660000] mt-4 shadow-md transition-all cursor-pointer"
+                type="button"
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthError('');
+                  setAuthSuccess('');
+                }}
+                className={`flex-1 py-3 text-lg sm:text-xl font-bold rounded-xl transition-all cursor-pointer ${
+                  authMode === 'login'
+                    ? 'bg-[#800000] text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                {authMode === 'login' ? 'ဝင်မည်' : 'အကောင့်ဖွင့်မည်'}
+                ဝင်မည် (Log In)
               </button>
-            </form>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signup');
+                  setAuthError('');
+                  setAuthSuccess('');
+                }}
+                className={`flex-1 py-3 text-lg sm:text-xl font-bold rounded-xl transition-all cursor-pointer ${
+                  authMode === 'signup'
+                    ? 'bg-[#800000] text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                အကောင့်ဖွင့်မည် (Sign Up)
+              </button>
+            </div>
+
+            {/* Error & Success Messages */}
+            {authError && (
+              <div className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-300 text-red-800 text-lg flex items-center gap-3">
+                <AlertCircle size={24} className="shrink-0 text-red-600" />
+                <span>{authError}</span>
+              </div>
+            )}
+            {authSuccess && (
+              <div className="mb-6 p-4 rounded-2xl bg-green-50 border-2 border-green-300 text-green-800 text-lg flex items-center gap-3">
+                <CheckCircle2 size={24} className="shrink-0 text-green-600" />
+                <span>{authSuccess}</span>
+              </div>
+            )}
+
+            {/* 1. Log In Form */}
+            {authMode === 'login' ? (
+              <form onSubmit={handleLoginSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-xl font-bold text-gray-800 mb-2">
+                    အီးမေးလ် (Email)
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="example@gmail.com"
+                    className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xl font-bold text-gray-800 mb-2">
+                    စကားဝှက် (Password)
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.99] text-white py-5 px-6 rounded-2xl text-2xl font-black shadow-xl transition-all cursor-pointer mt-2 disabled:opacity-50"
+                >
+                  {authLoading ? 'စစ်ဆေးနေပါသည်...' : 'ဝင်မည်'}
+                </button>
+
+                <p className="text-center text-lg text-gray-600 pt-2">
+                  အကောင့်မရှိသေးပါက{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setAuthError('');
+                      setAuthSuccess('');
+                    }}
+                    className="text-[#800000] font-bold underline hover:text-[#660000] cursor-pointer"
+                  >
+                    အကောင့်ဖွင့်မည်
+                  </button>
+                </p>
+              </form>
+            ) : (
+              /* 2. Sign Up Form */
+              <form onSubmit={handleSignUpSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-xl font-bold text-gray-800 mb-2">
+                    အီးမေးလ် (Email)
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    placeholder="example@gmail.com"
+                    className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xl font-bold text-gray-800 mb-2">
+                    စကားဝှက် (Password)
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    placeholder="အနည်းဆုံး ၆ လုံး"
+                    className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xl font-bold text-gray-800 mb-2">
+                    စကားဝှက် အတည်ပြုရန် (Confirm Password)
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={signupConfirmPassword}
+                    onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                    placeholder="စကားဝှက်ကို ထပ်မံရိုက်ထည့်ပါ"
+                    className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.99] text-white py-5 px-6 rounded-2xl text-2xl font-black shadow-xl transition-all cursor-pointer mt-2 disabled:opacity-50"
+                >
+                  {authLoading ? 'လုပ်ဆောင်နေပါသည်...' : 'အကောင့်ဖွင့်မည်'}
+                </button>
+
+                <p className="text-center text-lg text-gray-600 pt-2">
+                  အကောင့်ရှိပြီးသားဖြစ်ပါက{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('login');
+                      setAuthError('');
+                      setAuthSuccess('');
+                    }}
+                    className="text-[#800000] font-bold underline hover:text-[#660000] cursor-pointer"
+                  >
+                    ဝင်မည်
+                  </button>
+                </p>
+              </form>
+            )}
           </div>
         </div>
       )}
