@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>သုတဓမ္မ ဉာဏ်စမ်း - Sutadhama Quizzie</title>
+  
+  <!-- App Logo / Favicon -->
+  <link rel="icon" type="image/png" href="Suta Logo.png">
+  <link rel="apple-touch-icon" href="Suta Logo.png">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            maroon: {
+              DEFAULT: '#800000',
+              hover: '#660000',
+              active: '#4d0000',
+            },
+            saffron: {
+              DEFAULT: '#FF9933',
+              hover: '#e68a00',
+            },
+            cream: '#FAF9F6',
+          },
+          fontFamily: {
+            burmese: ['Pyidaungsu', 'Padauk', 'Noto Sans Myanmar', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Padauk & Noto Sans Myanmar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Noto+Sans+Myanmar:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  
+  <!-- Supabase JS Client CDN -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <!-- Babel Standalone CDN -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      background-color: #FAF9F6;
+      font-family: 'Pyidaungsu', 'Padauk', 'Noto Sans Myanmar', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="bg-[#FAF9F6] text-gray-900 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // =========================================================================
+    // Supabase Client Setup
+    // =========================================================================
+    const SUPABASE_URL = 'https://vprxbhosrqvdduogdkih.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable__dzDXSZczMtXy7RRdNp1lQ_C77Pba32';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+    // =========================================================================
+    // Self-contained SVG Icons for zero-dependency browser preview
+    // =========================================================================
+    const ChevronLeftIcon = ({ className = "w-8 h-8 stroke-[2.5]" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    );
+
+    const ChevronRightIcon = ({ className = "w-8 h-8 stroke-[2.5]" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    );
+
+    const ChevronDownIcon = ({ className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+
+    const BookOpenIcon = ({ className = "w-10 h-10" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    );
+
+    const GraduationCapIcon = ({ className = "w-10 h-10" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+      </svg>
+    );
+
+    const MinusIcon = () => (
+      <svg className="w-8 h-8 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+      </svg>
+    );
+
+    const PlusIcon = () => (
+      <svg className="w-8 h-8 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+    );
+
+    const CheckCircleIcon = ({ className = "w-8 h-8" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const AlertCircleIcon = ({ className = "w-8 h-8" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
+
+    const CheckIcon = ({ className = "w-5 h-5 stroke-[3]" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    );
+
+    const RotateCcwIcon = ({ className = "w-8 h-8" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
+    );
+
+    const HomeIcon = ({ className = "w-8 h-8" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    );
+
+    const SparklesIcon = () => (
+      <svg className="w-5 h-5 text-[#FFCC00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z" />
+      </svg>
+    );
+
+    const SendIcon = () => (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+      </svg>
+    );
+
+    const XIcon = () => (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    );
+
+    const UserIcon = ({ className = "w-6 h-6" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    );
+
+    const AwardIcon = ({ className = "w-6 h-6" }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+      </svg>
+    );
+
+    // Helper function to convert English digits to Burmese digits
+    const toBurmeseDigits = (numStr) => {
+      const burmeseDigits = ['၀', '၁', '၂', '၃', '၄', '၅', '၆', '၇', '၈', '၉'];
+      return String(numStr).replace(/[0-9]/g, (d) => burmeseDigits[parseInt(d, 10)]);
+    };
+
+    // Helper function to format chapter label naturally
+    const formatChapterLabel = (chapterStr, courseType) => {
+      if (!chapterStr) return '';
+      const str = String(chapterStr).trim();
+      if (str.includes('အခန်း') || str.includes('အပိုင်း')) {
+        return str;
+      }
+      const prefix = courseType === 'ba' || courseType === 'BA' ? 'အပိုင်း' : 'အခန်း';
+      if (str.includes('-')) {
+        const parts = str.split('-');
+        return `${prefix} ${toBurmeseDigits(parts[0])} မှ ${toBurmeseDigits(parts[1])}`;
+      }
+      return `${prefix} ${toBurmeseDigits(str)}`;
+    };
+
+    // Helper function to sort chapter strings numerically
+    const sortChapters = (a, b) => {
+      const numA = parseInt(String(a).match(/\d+/)?.[0] || '999', 10);
+      const numB = parseInt(String(b).match(/\d+/)?.[0] || '999', 10);
+      if (numA !== numB) return numA - numB;
+      return String(a).localeCompare(String(b));
+    };
+
+    // =========================================================================
+    // Bilingual Content for About Us Page
+    // =========================================================================
+    const aboutContent = {
+      my: {
+        heroTag: 'ကျွန်ုပ်တို့အကြောင်း',
+        heroTitle: 'သုတဓမ္မ ဉာဏ်စမ်း',
+        heroSubtitle: 'သာသနာတော် အဓွန့်ရှည်တည်တံ့ခိုင်မြဲစေရန် ရည်ရွယ်၍ ပညာဘူမိတက္ကသိုလ်မှ သုတဓမ္မစာမေးပွဲများကို နှစ်စဉ် ကျင်းပပြုလုပ်လျက်ရှိပါသည်။ ဤ \'သုတဓမ္မဉာဏ်စမ်း\' ဝက်ဘ်ဆိုက်သည် မြန်မာတစ်နိုင်ငံလုံးရှိ သုတဓမ္မ ဒီပလိုမာတန်းနှင့် ဝိဇ္ဇာဘွဲ့တန်း တက်ရောက်သင်ကြားနေကြသော ဓမ္မမိတ်ဆွေများအနေဖြင့် စာမေးပွဲမတိုင်မီ ကြိုတင်လေ့ကျင့်နိုင်ရန် ရည်ရွယ်ဖန်တီးထားသော အခမဲ့ လေ့ကျင့်ရေးပလက်ဖောင်းတစ်ခု ဖြစ်ပါသည်။',
+        objectiveTitle: 'ကျွန်ုပ်တို့၏ ရည်ရွယ်ချက်',
+        objectiveDesc: 'အသက်အရွယ်မရွေး ဓမ္မမိတ်ဆွေများအနေဖြင့် နည်းပညာအခက်အခဲမရှိဘဲ မိမိတို့၏ လက်ကိုင်ဖုန်း (သို့မဟုတ်) ကွန်ပျူတာများမှတစ်ဆင့် ဓမ္မစာပေများကို လွယ်ကူအဆင်ပြေစွာ လေ့လာမှတ်သားနိုင်စေရန် ရည်ရွယ်ပါသည်။ အကောင့်ဖွင့်ရန် မလိုအပ်ဘဲ အချိန်မရွေး ဝင်ရောက်လေ့ကျင့်နိုင်ရန် အထူးစီစဉ်ပေးထားပါသည်။',
+        featuresTitle: 'ဤဝက်ဘ်ဆိုက်၏ ထူးခြားချက်များ',
+        features: [
+          {
+            title: 'လုံးဝ အခမဲ့ဖြစ်ခြင်း',
+            desc: 'မည်သည့် အခကြေးငွေမျှ ပေးသွင်းရန် မလိုအပ်သော ကုသိုလ်ဖြစ် (Zero-profit) ပရောဂျက် သက်သက်သာ ဖြစ်ပါသည်။'
+          },
+          {
+            title: 'အသုံးပြုရ လွယ်ကူရှင်းလင်းခြင်း',
+            desc: 'ဖတ်ရှုရ ရှင်းလင်းသော မြန်မာစာလုံးအလှများ၊ ကြီးမားသော စာလုံးအရွယ်အစားများနှင့် ရှင်းလင်းသော အရောင်အသွေးများကို အသုံးပြုထားသဖြင့် သက်ကြီးရွယ်အိုများအတွက်ပါ အထူးသင့်လျော်ပါသည်။'
+          },
+          {
+            title: 'စနစ်ကျသော လေ့ကျင့်မှု',
+            desc: 'ပြဌာန်းစာအုပ်ပါ အခန်းများအလိုက် မေးခွန်းများကို အချိုးကျ ထည့်သွင်းပေးထားပြီး မိမိလေ့ကျင့်လိုသော အခန်းများကို စိတ်ကြိုက်ရွေးချယ် ဖြေဆိုနိုင်ပါသည်။'
+          },
+          {
+            title: 'အဖြေမှန် ရှင်းလင်းချက်များ',
+            desc: 'ဖြေဆိုပြီးပါက မိမိ၏ ရမှတ်ကို ရာခိုင်နှုန်းဖြင့် ကြည့်ရှုနိုင်ပြီး အဖြေမှန်များနှင့်တကွ ရှင်းလင်းချက်များကို ပြန်လည်တိုက်ဆိုင် စစ်ဆေးနိုင်ပါသည်။'
+          }
+        ],
+        goodwillTitle: 'စေတနာဖြင့် ဖန်တီးခြင်း',
+        goodwillDesc: 'ဤစနစ်ကို ဓမ္မဒါနကုသိုလ်အဖြစ် နည်းပညာဖြင့် အကျိုးပြုလိုသော တက္ကသိုလ်ကျောင်းသားတစ်ဦးမှ စေတနာသဒ္ဓါတရားဖြင့် ကြိုးပမ်းဖန်တီးထားခြင်း ဖြစ်ပါသည်။',
+        disclaimerTitle: 'ရှင်းလင်းချက်',
+        disclaimerDesc: 'ဤဝက်ဘ်ဆိုက်သည် သက်ဆိုင်ရာ သုတဓမ္မစာမေးပွဲ ကျင်းပရေးကော်မတီ (သို့မဟုတ်) တရားဝင်အဖွဲ့အစည်းများနှင့် တိုက်ရိုက်ပတ်သက်မှု၊ ထောက်ခံမှု သို့မဟုတ် အသိအမှတ်ပြုမှု ရယူထားခြင်း မရှိပါ။ ဤဝက်ဘ်ဆိုက်ပါ အချက်အလက်များနှင့် မေးခွန်းများအားလုံးသည် သုတဓမ္မ ဒီပလိုမာတန်းနှင့် ဝိဇ္ဇာဘွဲ့တန်း ဖြေဆိုမည့်သူများ စာမေးပွဲအတွက် ကြိုတင်လေ့ကျင့်နိုင်ရန်နှင့် ဓမ္မဗဟုသုတ မျှဝေရန် ရည်ရွယ်ချက်သက်သက်ဖြင့်သာ ဖန်တီးထားခြင်းဖြစ်ပြီး တရားဝင်စာမေးပွဲ ကျင်းပခြင်း ကိစ္စရပ်များနှင့် လုံးဝသက်ဆိုင်ခြင်း မရှိပါ။',
+        blessingText: 'ဓမ္မမိတ်ဆွေများအားလုံး သုတဓမ္မစာမေးပွဲများကို လွယ်ကူချောမွေ့စွာ ဖြေဆိုနိုင်ပြီး တရားဓမ္မအသိဉာဏ်များ တိုးပွားနိုင်ကြပါစေဟု ဆုတောင်းမေတ္တာ ပို့သအပ်ပါသည်။',
+        startPracticeBtn: 'ယခု လေ့ကျင့်မည်'
+      },
+      en: {
+        heroTag: 'About Us',
+        heroTitle: 'Sutadhama Quizzie',
+        heroSubtitle: 'University of Wisdom Land annually holds the Sutadhama examinations for the perpetuation of the Sasana (the Buddhist teachings). The Sutadhama Quiz website is a free practice platform created for Dhamma friends across Myanmar who are attending the Sutadhama Diploma and B.A. courses, allowing them to practice in advance before their exams.',
+        objectiveTitle: 'Our Objective',
+        objectiveDesc: 'We aim to enable Dhamma friends of all ages to conveniently and easily study and memorize Dhamma literature via their mobile phones or computers, without facing any technical difficulties. The platform is specially designed to be accessible for practice at any time without the need to create an account.',
+        featuresTitle: 'Features of this Website',
+        features: [
+          {
+            title: 'Completely Free',
+            desc: 'This is strictly a zero-profit project that requires no fees or payments whatsoever.'
+          },
+          {
+            title: 'Easy to Use',
+            desc: 'It utilizes clear Burmese fonts, large text sizes, and a clean color palette, making it especially suitable for older adults.'
+          },
+          {
+            title: 'Systematic Practice',
+            desc: 'Questions are proportionally distributed according to the chapters in the textbooks, and users can freely select the specific chapters they wish to practice.'
+          },
+          {
+            title: 'Correct Answer Explanations',
+            desc: 'After completing a quiz, users can view their score as a percentage and check the correct answers along with detailed explanations.'
+          }
+        ],
+        goodwillTitle: 'Created with Goodwill',
+        goodwillDesc: 'This system was created out of goodwill and faith as a Dhamma Dana (gift of Dhamma) by a university student who wishes to contribute to the community through technology.',
+        disclaimerTitle: 'Disclaimer',
+        disclaimerDesc: 'This website is not directly affiliated with, endorsed, or approved by the relevant Sutadhama Examination Committee or any official organizations. All information and questions on this website are created solely for the purpose of sharing Dhamma knowledge and helping students practice for the Sutadhama Diploma and B.A. examinations. It has nothing to do with the official administration of the examinations.',
+        blessingText: 'May all Dhamma friends be able to take the Sutadhama exams smoothly and successfully, and may their wisdom and understanding of the Dhamma continue to grow.',
+        startPracticeBtn: 'Start Practicing Now'
+      }
+    };
+
+    function App() {
+      // Navigation states: 'home' | 'about' | 'practice' | 'levels' | 'parts' | 'chapters' | 'count' | 'contact' | 'quiz' | 'results' | 'review'
+      const [currentScreen, setCurrentScreen] = useState('home');
+      const [aboutLang, setAboutLang] = useState('my'); // 'my' | 'en'
+
+      // Dropdown & Modal State
+      const [isPracticeDropdownOpen, setIsPracticeDropdownOpen] = useState(false);
+      const [showAuthModal, setShowAuthModal] = useState(false);
+      const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+
+      // Supabase Auth State
+      const [currentUser, setCurrentUser] = useState(null);
+      const [loginEmail, setLoginEmail] = useState('');
+      const [loginPassword, setLoginPassword] = useState('');
+      const [signupEmail, setSignupEmail] = useState('');
+      const [signupPassword, setSignupPassword] = useState('');
+      const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
+      const [authLoading, setAuthLoading] = useState(false);
+      const [authError, setAuthError] = useState('');
+      const [authSuccess, setAuthSuccess] = useState('');
+
+      // Supabase Auth Session listener
+      useEffect(() => {
+        if (!supabaseClient) return;
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          setCurrentUser(session?.user ?? null);
+        });
+
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+          setCurrentUser(session?.user ?? null);
+        });
+
+        return () => {
+          subscription?.unsubscribe();
+        };
+      }, []);
+
+      const handleLoginSubmit = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+        setAuthSuccess('');
+
+        if (!loginEmail.trim() || !loginPassword) {
+          setAuthError('အီးမေးလ်နှင့် စကားဝှက်ကို ဖြည့်သွင်းပေးပါခင်ဗျာ။');
+          return;
+        }
+
+        if (!supabaseClient) {
+          setAuthError('Supabase ချိတ်ဆက်မှု မရှိသေးပါ။');
+          return;
+        }
+
+        setAuthLoading(true);
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: loginEmail.trim(),
+            password: loginPassword,
+          });
+
+          if (error) {
+            if (error.message.includes('Invalid login credentials')) {
+              setAuthError('အီးမေးလ် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+            } else {
+              setAuthError(error.message);
+            }
+          } else if (data?.user) {
+            setCurrentUser(data.user);
+            setShowAuthModal(false);
+            setLoginEmail('');
+            setLoginPassword('');
+          }
+        } catch (err) {
+          setAuthError('ချိတ်ဆက်မှု မအောင်မြင်ပါ။ နောက်မှ ထပ်မံကြိုးစားကြည့်ပါ။');
+        } finally {
+          setAuthLoading(false);
+        }
+      };
+
+      const handleSignUpSubmit = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+        setAuthSuccess('');
+
+        if (!signupEmail.trim() || !signupPassword || !signupConfirmPassword) {
+          setAuthError('အချက်အလက်အားလုံးကို ပြည့်စုံစွာ ဖြည့်သွင်းပေးပါခင်ဗျာ။');
+          return;
+        }
+
+        if (signupPassword !== signupConfirmPassword) {
+          setAuthError('စကားဝှက်များ တူညီမှု မရှိပါ။ ပြန်လည်စစ်ဆေးပေးပါ။');
+          return;
+        }
+
+        if (signupPassword.length < 6) {
+          setAuthError('စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။');
+          return;
+        }
+
+        if (!supabaseClient) {
+          setAuthError('Supabase ချိတ်ဆက်မှု မရှိသေးပါ။');
+          return;
+        }
+
+        setAuthLoading(true);
+        try {
+          const { data, error } = await supabaseClient.auth.signUp({
+            email: signupEmail.trim(),
+            password: signupPassword,
+          });
+
+          if (error) {
+            if (error.message.includes('already registered')) {
+              setAuthError('ဤအီးမေးလ်ဖြင့် အကောင့်ဖွင့်ပြီး ဖြစ်ပါသည်။');
+            } else {
+              setAuthError(error.message);
+            }
+          } else {
+            if (data?.session) {
+              setCurrentUser(data.session.user);
+              setAuthSuccess('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။');
+              setTimeout(() => {
+                setShowAuthModal(false);
+                setSignupEmail('');
+                setSignupPassword('');
+                setSignupConfirmPassword('');
+              }, 1200);
+            } else {
+              setAuthSuccess('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ သင့်အီးမေးလ်သို့ ပို့ထားသော အတည်ပြုလင့်ခ်ကို နှိပ်ပေးပါ။');
+            }
+          }
+        } catch (err) {
+          setAuthError('ချိတ်ဆက်မှု မအောင်မြင်ပါ။ နောက်မှ ထပ်မံကြိုးစားကြည့်ပါ။');
+        } finally {
+          setAuthLoading(false);
+        }
+      };
+
+      const handleLogOut = async () => {
+        if (!supabaseClient) return;
+        try {
+          await supabaseClient.auth.signOut();
+          setCurrentUser(null);
+        } catch (err) {
+          console.error("Sign out error", err);
+        }
+      };
+
+      // Quiz Configuration State
+      const [selectedCourse, setSelectedCourse] = useState(null);
+      const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
+      const [selectedLevel, setSelectedLevel] = useState('');
+      const [questionCount, setQuestionCount] = useState(20);
+
+      // Chapter Selection State
+      const [availableChapters, setAvailableChapters] = useState([]);
+      const [selectedChapters, setSelectedChapters] = useState([]);
+      const [isChaptersLoading, setIsChaptersLoading] = useState(false);
+      const [chaptersError, setChaptersError] = useState(null);
+
+      // Quiz State (Delayed Grading)
+      const [quizQuestions, setQuizQuestions] = useState([]);
+      const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+      const [userAnswers, setUserAnswers] = useState({});
+      const [quizLoading, setQuizLoading] = useState(false);
+      const [quizError, setQuizError] = useState(null);
+      const [showSubmitConfirmModal, setShowSubmitConfirmModal] = useState(false);
+
+      // Results & Review State
+      const [quizScore, setQuizScore] = useState({ correct: 0, total: 0, percentage: 0, unanswered: 0 });
+      const [reviewQuestionIndex, setReviewQuestionIndex] = useState(0);
+
+      // Contact Form State
+      const [contactSubmitting, setContactSubmitting] = useState(false);
+      const [contactSuccess, setContactSuccess] = useState(false);
+      const [contactError, setContactError] = useState(null);
+      const [contactForm, setContactForm] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        message: ''
+      });
+
+      // =========================================================================
+      // Part 1: Contact Us Form to Supabase
+      // =========================================================================
+      const handleContactSubmit = async (e) => {
+        e.preventDefault();
+        setContactSubmitting(true);
+        setContactError(null);
+        setContactSuccess(false);
+
+        try {
+          if (!supabaseClient) throw new Error("Supabase client is not loaded.");
+
+          const { error } = await supabaseClient
+            .from('feedbacks')
+            .insert([
+              {
+                first_name: contactForm.firstName.trim(),
+                last_name: contactForm.lastName.trim(),
+                email: contactForm.email.trim(),
+                message: contactForm.message.trim()
+              }
+            ]);
+
+          if (error) throw error;
+
+          setContactSuccess(true);
+          setContactForm({ firstName: '', lastName: '', email: '', message: '' });
+          setTimeout(() => {
+            setContactSuccess(false);
+          }, 6000);
+        } catch (err) {
+          console.error('Contact submit error:', err);
+          setContactError(
+            'မက်ဆေ့ခ်ျ ပေးပို့ရာတွင် အဆင်မပြေဖြစ်သွားပါသည်။ (Supabase တွင် feedbacks table တည်ဆောက်ထားခြင်း ရှိမရှိ စစ်ဆေးပေးပါ)'
+          );
+        } finally {
+          setContactSubmitting(false);
+        }
+      };
+
+      // =========================================================================
+      // Part 2: Proportional Quiz Data Fetching (With Dynamic Chapter Filter & Cap Logic)
+      // =========================================================================
+      const fetchProportionalQuestions = async (courseType, levelNum, targetCount, chaptersToInclude) => {
+        if (!supabaseClient) {
+          throw new Error('Supabase client မချိတ်ဆက်နိုင်သေးပါ။');
+        }
+
+        // Fetch questions for course_type and level, filtered by selectedChapters
+        let query = supabaseClient
+          .from('questions')
+          .select('*')
+          .eq('course_type', courseType)
+          .eq('level', levelNum);
+
+        // Expand query for BA Level 1 to include legacy range strings if corresponding chapter is selected
+        let chaptersQuery = chaptersToInclude ? [...chaptersToInclude] : [];
+        if (courseType === 'BA' && levelNum === 1 && chaptersQuery.length > 0) {
+          if (chaptersQuery.includes('4') && !chaptersQuery.includes('4-7')) chaptersQuery.push('4-7');
+          if (chaptersQuery.includes('8') && !chaptersQuery.includes('8-13')) chaptersQuery.push('8-13');
+          if (chaptersQuery.includes('14') && !chaptersQuery.includes('14-20')) chaptersQuery.push('14-20');
+          if (chaptersQuery.includes('1') && !chaptersQuery.includes('21-27')) chaptersQuery.push('21-27');
+        }
+
+        if (chaptersQuery.length > 0) {
+          query = query.in('chapter', chaptersQuery);
+        }
+
+        const { data, error } = await query.limit(3000);
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error(`ရွေးချယ်ထားသော အခန်းများအတွက် မေးခွန်းများ ရှာမတွေ့ပါ။ အခြားအခန်းများကို ရွေးချယ်ပေးပါ။`);
+        }
+
+        // Normalize any legacy range chapters in data for BA Level 1
+        if (courseType === 'BA' && levelNum === 1) {
+          data.forEach((q) => {
+            if (q.chapter === '4-7') q.chapter = '4';
+            if (q.chapter === '8-13') q.chapter = '8';
+            if (q.chapter === '14-20') q.chapter = '14';
+            if (q.chapter === '21-27') q.chapter = '1';
+          });
+        }
+
+        // Count total available questions for selected chapters
+        const totalAvailable = data.length;
+
+        // The Cap Logic: If requested count > totalAvailable, cap quiz to totalAvailable
+        const effectiveTarget = Math.min(targetCount, totalAvailable);
+
+        // If effectiveTarget >= totalAvailable, return all questions shuffled without duplicates
+        if (effectiveTarget >= totalAvailable) {
+          const allShuffled = [...data];
+          for (let i = allShuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allShuffled[i], allShuffled[j]] = [allShuffled[j], allShuffled[i]];
+          }
+          return allShuffled;
+        }
+
+        // Proportional allocation across selected chapters
+        const grouped = {};
+        data.forEach((q) => {
+          const ch = q.chapter || '1';
+          if (!grouped[ch]) grouped[ch] = [];
+          grouped[ch].push(q);
+        });
+
+        const chapters = Object.keys(grouped);
+        const allocation = {};
+        let allocatedSum = 0;
+        let largestChapter = chapters[0];
+        let largestSize = 0;
+
+        chapters.forEach((ch) => {
+          const chSize = grouped[ch].length;
+          if (chSize > largestSize) {
+            largestSize = chSize;
+            largestChapter = ch;
+          }
+          const quota = Math.round((chSize / totalAvailable) * effectiveTarget);
+          allocation[ch] = Math.min(quota, chSize);
+          allocatedSum += allocation[ch];
+        });
+
+        // Rounding remainders adjusted on largest chapter
+        let diff = effectiveTarget - allocatedSum;
+        if (diff !== 0 && largestChapter) {
+          const cur = allocation[largestChapter];
+          const maxAvail = grouped[largestChapter].length;
+          const newCnt = Math.max(0, Math.min(maxAvail, cur + diff));
+          diff -= (newCnt - cur);
+          allocation[largestChapter] = newCnt;
+
+          if (diff !== 0) {
+            for (const ch of chapters) {
+              if (diff === 0) break;
+              if (diff > 0 && allocation[ch] < grouped[ch].length) {
+                allocation[ch]++;
+                diff--;
+              } else if (diff < 0 && allocation[ch] > 0) {
+                allocation[ch]--;
+                diff++;
+              }
+            }
+          }
+        }
+
+        // Random sampling from each chapter
+        const sampledQuestions = [];
+        chapters.forEach((ch) => {
+          const count = allocation[ch] || 0;
+          if (count > 0) {
+            const pool = [...grouped[ch]];
+            for (let i = pool.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            sampledQuestions.push(...pool.slice(0, count));
+          }
+        });
+
+        // Final shuffle of aggregated array
+        for (let i = sampledQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [sampledQuestions[i], sampledQuestions[j]] = [sampledQuestions[j], sampledQuestions[i]];
+        }
+
+        return sampledQuestions;
+      };
+
+      const handleStartQuiz = async () => {
+        setQuizLoading(true);
+        setQuizError(null);
+        setCurrentScreen('quiz');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        try {
+          const courseType = selectedCourse === 'diploma' ? 'Diploma' : 'BA';
+          const levelNum = parseInt(selectedLevel.replace(/\D/g, ''), 10) || 1;
+          const questions = await fetchProportionalQuestions(
+            courseType,
+            levelNum,
+            questionCount,
+            selectedChapters
+          );
+
+          setQuizQuestions(questions);
+          setCurrentQuestionIndex(0);
+          setUserAnswers({});
+        } catch (err) {
+          console.error('Quiz fetch error:', err);
+          setQuizError(err.message || 'မေးခွန်းများ ရယူရာတွင် အမှားအယွင်း ဖြစ်ပေါ်ခဲ့ပါသည်။');
+        } finally {
+          setQuizLoading(false);
+        }
+      };
+
+      const handleCourseSelect = (courseType) => {
+        setIsPracticeDropdownOpen(false);
+        if (courseType === 'diploma') {
+          setSelectedCourse('diploma');
+          setSelectedCourseTitle('သုတဓမ္မ ဒီပလိုမာတန်း');
+          setCurrentScreen('levels');
+        } else {
+          setSelectedCourse('ba');
+          setSelectedCourseTitle('သုတဓမ္မ ဝိဇ္ဇာဘွဲ့တန်း');
+          setCurrentScreen('parts');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // Select Level & Immediately Query Supabase for Distinct Chapters
+      const handleLevelSelect = async (levelName) => {
+        setSelectedLevel(levelName);
+        setCurrentScreen('chapters');
+        setIsChaptersLoading(true);
+        setChaptersError(null);
+        setAvailableChapters([]);
+        setSelectedChapters([]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        try {
+          if (!supabaseClient) throw new Error('Supabase client မချိတ်ဆက်နိုင်သေးပါ။');
+
+          const courseType = selectedCourse === 'diploma' ? 'Diploma' : 'BA';
+          const levelNum = parseInt(levelName.replace(/\D/g, ''), 10) || 1;
+
+          const { data, error } = await supabaseClient
+            .from('questions')
+            .select('chapter')
+            .eq('course_type', courseType)
+            .eq('level', levelNum)
+            .limit(3000);
+
+          if (error) throw error;
+          if (!data || data.length === 0) {
+            throw new Error('အခန်းများ ရှာမတွေ့ပါ။');
+          }
+
+          // Extract unique chapters and filter out empty
+          // Clean and normalize legacy range chapters for BA Level 1
+          const normalizedChapters = data.map((item) => {
+            const ch = String(item.chapter).trim();
+            if (courseType === 'BA' && levelNum === 1) {
+              if (ch === '4-7') return '4';
+              if (ch === '8-13') return '8';
+              if (ch === '14-20') return '14';
+              if (ch === '21-27') return '1';
+            }
+            return ch;
+          }).filter(Boolean);
+
+          const unique = Array.from(new Set(normalizedChapters));
+          unique.sort(sortChapters);
+
+          setAvailableChapters(unique);
+          setSelectedChapters(unique); // All checked by default
+        } catch (err) {
+          console.error('Error fetching chapters:', err);
+          setChaptersError(err.message || 'အခန်းများ ရယူရာတွင် အဆင်မပြေဖြစ်သွားပါသည်။');
+        } finally {
+          setIsChaptersLoading(false);
+        }
+      };
+
+      const handleStepperChange = (delta) => {
+        setQuestionCount((prev) => {
+          const next = prev + delta;
+          if (next >= 10 && next <= 80) return next;
+          return prev;
+        });
+      };
+
+      const handleBack = () => {
+        if (currentScreen === 'levels' || currentScreen === 'parts') {
+          setCurrentScreen('practice');
+        } else if (currentScreen === 'chapters') {
+          setCurrentScreen(selectedCourse === 'diploma' ? 'levels' : 'parts');
+        } else if (currentScreen === 'count') {
+          setCurrentScreen('chapters');
+        } else if (currentScreen === 'quiz') {
+          if (confirm('ဉာဏ်စမ်းဖြေဆိုမှုကို လက်စသတ်ပြီး နောက်သို့ ပြန်သွားလိုပါသလား။')) {
+            setCurrentScreen('count');
+          }
+        } else if (currentScreen === 'results' || currentScreen === 'review') {
+          setCurrentScreen('count');
+        } else if (currentScreen === 'practice' || currentScreen === 'contact') {
+          setCurrentScreen('home');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      // =========================================================================
+      // Part 3: Delayed Grading Navigation
+      // =========================================================================
+      const handleSelectOption = (optionKey) => {
+        setUserAnswers((prev) => ({
+          ...prev,
+          [currentQuestionIndex]: optionKey
+        }));
+      };
+
+      const handleNextQuestion = () => {
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+          setCurrentQuestionIndex((prev) => prev + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      const handlePrevQuestion = () => {
+        if (currentQuestionIndex > 0) {
+          setCurrentQuestionIndex((prev) => prev - 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      const handleSkipQuestion = () => {
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+          setCurrentQuestionIndex((prev) => prev + 1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      const handleJumpToQuestion = (index) => {
+        setCurrentQuestionIndex(index);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const handlePreSubmitQuiz = () => {
+        const answeredCount = Object.keys(userAnswers).length;
+        const unansweredCount = quizQuestions.length - answeredCount;
+
+        if (unansweredCount > 0) {
+          setShowSubmitConfirmModal(true);
+        } else {
+          executeQuizSubmit();
+        }
+      };
+
+      const executeQuizSubmit = () => {
+        setShowSubmitConfirmModal(false);
+        let correctCount = 0;
+
+        quizQuestions.forEach((q, idx) => {
+          if (userAnswers[idx] === q.correct_option) {
+            correctCount++;
+          }
+        });
+
+        const total = quizQuestions.length;
+        const percentage = Math.round((correctCount / total) * 100);
+        const answered = Object.keys(userAnswers).length;
+        const unanswered = total - answered;
+
+        setQuizScore({
+          correct: correctCount,
+          total,
+          percentage,
+          unanswered
+        });
+
+        setCurrentScreen('results');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const handleReviewQuiz = () => {
+        setReviewQuestionIndex(0);
+        setCurrentScreen('review');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const handleExitQuiz = () => {
+        setCurrentScreen('home');
+        setQuizQuestions([]);
+        setUserAnswers({});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const currentQ = quizQuestions[currentQuestionIndex] || null;
+      const reviewQ = quizQuestions[reviewQuestionIndex] || null;
+
+      return (
+        <div className="min-h-screen bg-[#FAF9F6] text-gray-900 flex flex-col antialiased">
+          
+          {/* ========================================================================= */}
+          {/* 1. NAVIGATION BAR (TOP)                                                 */}
+          {/* ========================================================================= */}
+          <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-150 px-4 md:px-10 py-3.5 transition-all">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              
+              {/* Left: Sutadhama Text Logo */}
+              <button 
+                onClick={() => { setCurrentScreen('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="flex items-center gap-3 group text-left cursor-pointer"
+                aria-label="Home"
+              >
+                <img 
+                  src="Suta Logo.png" 
+                  alt="သုတဓမ္မ ဉာဏ်စမ်း Logo" 
+                  className="w-12 h-12 object-contain rounded-2xl shadow-md border border-amber-500/20 bg-[#FAF9F6] p-0.5 group-hover:scale-105 transition-transform" 
+                />
+                <div>
+                  <span className="text-2xl md:text-3xl font-black text-[#800000] tracking-tight block leading-none">
+                    သုတဓမ္မ ဉာဏ်စမ်း
+                  </span>
+                  <span className="text-xs md:text-sm font-semibold text-gray-500 tracking-wider">
+                    SUTADHAMA QUIZ
+                  </span>
+                </div>
+              </button>
+
+              {/* Center: Main Links Navigation */}
+              <nav className="hidden md:flex items-center gap-8 text-xl font-bold text-gray-700">
+                <button
+                  onClick={() => { setCurrentScreen('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className={`hover:text-[#800000] transition-colors py-1 cursor-pointer ${currentScreen === 'home' ? 'text-[#800000] border-b-2 border-[#800000]' : ''}`}
+                >
+                  Home
+                </button>
+
+                <button
+                  onClick={() => { setCurrentScreen('about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className={`hover:text-[#800000] transition-colors py-1 cursor-pointer ${currentScreen === 'about' ? 'text-[#800000] border-b-2 border-[#800000]' : ''}`}
+                >
+                  About Us
+                </button>
+
+                {/* Practice Dropdown (Non-clickable button, reveals choices with dropdown sign) */}
+                <div 
+                  className="relative group"
+                  onMouseEnter={() => setIsPracticeDropdownOpen(true)}
+                  onMouseLeave={() => setIsPracticeDropdownOpen(false)}
+                >
+                  <button 
+                    type="button"
+                    className={`flex items-center gap-2 py-1 cursor-default transition-colors ${['practice', 'levels', 'parts', 'count', 'quiz', 'results', 'review'].includes(currentScreen) ? 'text-[#800000] border-b-2 border-[#800000]' : 'hover:text-[#800000]'}`}
+                    aria-haspopup="true"
+                  >
+                    <span>Practice</span>
+                    <ChevronDownIcon className={`w-5 h-5 transition-transform duration-200 ${isPracticeDropdownOpen ? 'rotate-180 text-[#800000]' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  <div 
+                    className={`absolute left-0 top-full pt-2 w-72 transition-all duration-150 ${isPracticeDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'}`}
+                  >
+                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-2.5 space-y-1">
+                      <button
+                        onClick={() => handleCourseSelect('diploma')}
+                        className="w-full text-left px-5 py-4 rounded-xl hover:bg-[#FAF9F6] text-gray-800 hover:text-[#800000] font-bold text-lg flex items-center gap-3 transition-colors cursor-pointer"
+                      >
+                        <BookOpenIcon className="w-6 h-6 text-[#800000]" />
+                        <span>သုတဓမ္မဒီပလိုမာတန်း</span>
+                      </button>
+                      <button
+                        onClick={() => handleCourseSelect('ba')}
+                        className="w-full text-left px-5 py-4 rounded-xl hover:bg-[#FAF9F6] text-gray-800 hover:text-[#800000] font-bold text-lg flex items-center gap-3 transition-colors cursor-pointer"
+                      >
+                        <GraduationCapIcon className="w-6 h-6 text-[#800000]" />
+                        <span>သုတဓမ္မဝိဇ္ဇာတန်း</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => { setCurrentScreen('contact'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className={`hover:text-[#800000] transition-colors py-1 cursor-pointer ${currentScreen === 'contact' ? 'text-[#800000] border-b-2 border-[#800000]' : ''}`}
+                >
+                  Contact Us
+                </button>
+              </nav>
+
+              {/* Right: Authentication Status & Actions */}
+              <div className="flex items-center gap-3 md:gap-5">
+                {currentUser ? (
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div 
+                      className="w-11 h-11 rounded-full bg-[#800000] text-white flex items-center justify-center shadow-md border-2 border-amber-300/40 cursor-default transition-transform hover:scale-105" 
+                      title={currentUser.email || 'အကောင့်ဝင်ထားသည်'}
+                      aria-label="User Profile"
+                    >
+                      <UserIcon className="w-6 h-6 stroke-[2.5]" />
+                    </div>
+                    <button
+                      onClick={handleLogOut}
+                      className="bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-700 font-bold text-lg md:text-xl px-4 py-1.5 rounded-xl border border-gray-300 hover:border-red-300 transition-colors cursor-pointer"
+                    >
+                      ထွက်မည်
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 md:gap-4">
+                    <button
+                      onClick={() => {
+                        setAuthMode('login');
+                        setAuthError('');
+                        setAuthSuccess('');
+                        setShowAuthModal(true);
+                      }}
+                      className="text-gray-700 hover:text-[#800000] font-bold text-lg md:text-xl px-2 py-1 transition-colors cursor-pointer"
+                    >
+                      ဝင်မည်
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      onClick={() => {
+                        setAuthMode('signup');
+                        setAuthError('');
+                        setAuthSuccess('');
+                        setShowAuthModal(true);
+                      }}
+                      className="bg-[#800000] hover:bg-[#660000] text-white font-bold text-lg md:text-xl px-4 py-2 rounded-xl shadow-md transition-colors cursor-pointer"
+                    >
+                      အကောင့်ဖွင့်မည်
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {/* ========================================================================= */}
+          {/* VIEW: HOMEPAGE                                                            */}
+          {/* ========================================================================= */}
+          {currentScreen === 'home' && (
+            <main className="flex-1 flex flex-col">
+              <section className="bg-[#1a1638] text-white py-16 md:py-24 px-6 md:px-12 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#800000]/30 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#FF9933]/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+                  <div className="space-y-8 text-center md:text-left">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white flex flex-col gap-2 md:gap-3.5 tracking-normal">
+                      <span>သုတဓမ္မစာမေးပွဲအတွက်</span>
+                      <span className="text-[#FFCC00]">ပြင်ဆင်ကြပါစို့</span>
+                    </h1>
+
+                    <p className="text-xl sm:text-2xl text-gray-300 font-normal leading-relaxed">
+                      သုတဓမ္မ ဒီပလိုမာတန်းနှင့် ဝိဇ္ဇာဘွဲ့တန်း မေးခွန်းများကို စိတ်ကြိုက်အရေအတွက်ဖြင့် လွယ်ကူရှင်းလင်းစွာ အချိန်မရွေး လေ့ကျင့်လိုက်ပါ။
+                    </p>
+
+                    <div className="pt-2 flex justify-center md:justify-start">
+                      <button
+                        onClick={() => { setCurrentScreen('practice'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="inline-flex items-center gap-3.5 bg-[#FFCC00] hover:bg-[#e6b800] active:scale-95 text-[#1a1638] text-2xl md:text-3xl font-black px-12 py-5 rounded-full shadow-2xl transition-all cursor-pointer"
+                      >
+                        <span>ယခုလေ့ကျင့်ပါ</span>
+                        <SparklesIcon />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Dhamma Library Resource Card connecting to dhammadownload.com */}
+                  <div className="flex justify-center md:justify-end">
+                    <a
+                      href="https://dhammadownload.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full max-w-md aspect-square bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border-2 border-white/20 hover:border-[#FFCC00] rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden group transition-all cursor-pointer"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-tr from-[#800000]/25 via-transparent to-[#FF9933]/20 group-hover:opacity-80 transition-opacity"></div>
+                      
+                      <div className="w-24 h-24 rounded-3xl bg-[#FFCC00] text-[#1a1638] flex items-center justify-center mb-5 shadow-xl relative z-10 group-hover:scale-110 transition-transform">
+                        <BookOpenIcon className="w-12 h-12" />
+                      </div>
+
+                      <h3 className="text-2xl md:text-3xl font-black text-white mb-2 relative z-10 group-hover:text-[#FFCC00] transition-colors">
+                        ဓမ္မစာကြည့်တိုက်
+                      </h3>
+
+                      <p className="text-gray-300 text-base md:text-lg font-medium relative z-10 leading-relaxed mb-4 max-w-xs">
+                        သုတဓမ္မ ဒီပလိုမာနှင့် ဝိဇ္ဇာဘွဲ့ သင်ရိုးစာအုပ်များ၊ တရားတော်များကို dhammadownload.com တွင် ရယူဖတ်ရှုနိုင်ပါသည်။
+                      </p>
+
+                      <div className="inline-flex items-center gap-2 bg-[#FFCC00]/20 text-[#FFCC00] text-sm md:text-base font-bold px-4 py-1.5 rounded-full border border-[#FFCC00]/40 group-hover:bg-[#FFCC00] group-hover:text-[#1a1638] transition-all relative z-10">
+                        <span>စာအုပ်များ ရယူရန်</span>
+                        <ChevronRightIcon className="w-4 h-4" />
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-[#FAF9F6] py-8 px-6 border-t border-gray-200">
+                <div className="max-w-4xl mx-auto text-center space-y-2 text-xs md:text-sm text-gray-500">
+                  <p className="font-bold text-gray-700 uppercase tracking-wider text-sm md:text-base">
+                    ရှင်းလင်းချက် (Disclaimer)
+                  </p>
+                  <p className="leading-relaxed">
+                    ဤဝက်ဘ်ဆိုက်သည် သက်ဆိုင်ရာ သုတဓမ္မစာမေးပွဲ ကျင်းပရေးကော်မတီ (သို့မဟုတ်) တရားဝင်အဖွဲ့အစည်းများနှင့် တိုက်ရိုက်ပတ်သက်မှု၊ ထောက်ခံမှု သို့မဟုတ် အသိအမှတ်ပြုမှု ရယူထားခြင်း မရှိပါ။ ဤဝက်ဘ်ဆိုက်ပါ အချက်အလက်များနှင့် မေးခွန်းများအားလုံးသည် သုတဓမ္မ ဒီပလိုမာတန်းနှင့် ဝိဇ္ဇာဘွဲ့တန်း ဖြေဆိုမည့်သူများ စာမေးပွဲအတွက် ကြိုတင်လေ့ကျင့်နိုင်ရန်နှင့် ဓမ္မဗဟုသုတ မျှဝေရန် ရည်ရွယ်ချက်သက်သက်ဖြင့်သာ ဖန်တီးထားခြင်းဖြစ်ပြီး တရားဝင်စာမေးပွဲ ကျင်းပခြင်း ကိစ္စရပ်များနှင့် လုံးဝသက်ဆိုင်ခြင်း မရှိပါ။
+                  </p>
+                </div>
+              </section>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: ABOUT US SCREEN (MODERN BILINGUAL UI WITH LANGUAGE TOGGLE)           */}
+          {/* ========================================================================= */}
+          {currentScreen === 'about' && (
+            <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-10 space-y-8">
+              
+              {/* Top Bar: Back to Home + Language Toggle */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <button
+                  onClick={() => { setCurrentScreen('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="inline-flex items-center gap-2 text-[#800000] hover:text-[#660000] font-bold text-lg md:text-xl py-2 px-3 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <ChevronLeftIcon className="w-6 h-6 stroke-[2.5]" />
+                  <span>{aboutLang === 'my' ? 'မူလစာမျက်နှာသို့' : 'Back to Home'}</span>
+                </button>
+
+                {/* Language Toggle Pill Switcher */}
+                <div className="inline-flex items-center bg-white p-1.5 rounded-2xl shadow-sm border border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setAboutLang('my')}
+                    className={`px-4 py-2 rounded-xl text-base md:text-lg font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                      aboutLang === 'my'
+                        ? 'bg-[#800000] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <span>🇲🇲</span>
+                    <span>မြန်မာ</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAboutLang('en')}
+                    className={`px-4 py-2 rounded-xl text-base md:text-lg font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                      aboutLang === 'en'
+                        ? 'bg-[#800000] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <span>🇬🇧</span>
+                    <span>English</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. Hero Card */}
+              <div className="bg-gradient-to-br from-[#1a1638] via-[#2a1335] to-[#800000] rounded-3xl p-8 md:p-14 text-white shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-[#FF9933]/15 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#800000]/25 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="relative z-10 space-y-6">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+                    <img 
+                      src="Suta Logo.png" 
+                      alt="သုတဓမ္မ ဉာဏ်စမ်း Logo" 
+                      className="w-24 h-24 object-contain rounded-2xl shadow-xl border-2 border-amber-300/40 bg-[#FAF9F6] p-1 shrink-0" 
+                    />
+                    <div className="space-y-2">
+                      <span className="inline-block bg-[#FFCC00]/20 text-[#FFCC00] text-sm md:text-base font-bold px-4 py-1.5 rounded-full border border-[#FFCC00]/30">
+                        {aboutContent[aboutLang].heroTag}
+                      </span>
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+                        {aboutContent[aboutLang].heroTitle}
+                      </h1>
+                    </div>
+                  </div>
+
+                  <p className="text-lg sm:text-xl md:text-2xl text-gray-200 font-normal leading-relaxed text-justify sm:text-left">
+                    {aboutContent[aboutLang].heroSubtitle}
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Our Objective Card */}
+              <div className="bg-white rounded-3xl p-8 md:p-10 shadow-lg border-2 border-gray-100 relative overflow-hidden">
+                <div className="w-2 h-full bg-[#800000] absolute left-0 top-0"></div>
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-[#FF9933]/15 text-[#800000] flex items-center justify-center shrink-0">
+                    <SparklesIcon />
+                  </div>
+                  <div className="space-y-3">
+                    <h2 className="text-2xl sm:text-3xl font-black text-[#800000]">
+                      {aboutContent[aboutLang].objectiveTitle}
+                    </h2>
+                    <p className="text-lg sm:text-xl text-gray-700 leading-relaxed font-medium">
+                      {aboutContent[aboutLang].objectiveDesc}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Features Grid (4 Cards) */}
+              <div className="space-y-6">
+                <div className="text-center sm:text-left">
+                  <span className="inline-block bg-[#800000]/10 text-[#800000] text-base md:text-lg font-bold px-4 py-1.5 rounded-full mb-2">
+                    Features
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl font-black text-[#800000]">
+                    {aboutContent[aboutLang].featuresTitle}
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {aboutContent[aboutLang].features.map((feat, idx) => (
+                    <div 
+                      key={idx}
+                      className="bg-white rounded-3xl p-8 shadow-md border-2 border-gray-100 hover:border-[#FF9933]/60 transition-all hover:-translate-y-1 group"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-[#800000]/10 text-[#800000] flex items-center justify-center mb-4 group-hover:bg-[#800000] group-hover:text-white transition-colors">
+                        {idx === 0 && <AwardIcon className="w-6 h-6" />}
+                        {idx === 1 && <CheckCircleIcon className="w-6 h-6" />}
+                        {idx === 2 && <BookOpenIcon className="w-6 h-6" />}
+                        {idx === 3 && <GraduationCapIcon className="w-6 h-6" />}
+                      </div>
+                      <h3 className="text-2xl font-black text-[#800000] mb-2">
+                        {feat.title}
+                      </h3>
+                      <p className="text-lg text-gray-600 leading-relaxed">
+                        {feat.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Created with Goodwill Card */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200/80 rounded-3xl p-8 md:p-10 shadow-md">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-[#800000] flex items-center justify-center shrink-0">
+                    <GraduationCapIcon className="w-8 h-8 text-[#800000]" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl sm:text-3xl font-black text-[#800000]">
+                      {aboutContent[aboutLang].goodwillTitle}
+                    </h3>
+                    <p className="text-lg sm:text-xl text-gray-800 leading-relaxed font-medium">
+                      {aboutContent[aboutLang].goodwillDesc}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Disclaimer Card */}
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-3xl p-6 sm:p-8 space-y-3">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <AlertCircleIcon className="w-6 h-6 text-[#800000] shrink-0" />
+                  <h4 className="text-xl font-bold uppercase tracking-wider text-gray-800">
+                    {aboutContent[aboutLang].disclaimerTitle}
+                  </h4>
+                </div>
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                  {aboutContent[aboutLang].disclaimerDesc}
+                </p>
+              </div>
+
+              {/* 6. Blessing & Start Practice CTA */}
+              <div className="bg-[#1a1638] rounded-3xl p-8 md:p-12 text-center text-white shadow-xl space-y-6">
+                <p className="text-xl sm:text-2xl text-amber-200 font-medium italic max-w-3xl mx-auto leading-relaxed">
+                  "{aboutContent[aboutLang].blessingText}"
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => { setCurrentScreen('practice'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className="inline-flex items-center gap-3 bg-[#FFCC00] hover:bg-[#e6b800] active:scale-95 text-[#1a1638] text-2xl font-black px-10 py-5 rounded-full shadow-2xl transition-all cursor-pointer"
+                  >
+                    <span>{aboutContent[aboutLang].startPracticeBtn}</span>
+                    <ChevronRightIcon className="w-6 h-6 stroke-[2.5]" />
+                  </button>
+                </div>
+              </div>
+
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: PRACTICE SCREEN                                                     */}
+          {/* ========================================================================= */}
+          {currentScreen === 'practice' && (
+            <main className="flex-1 max-w-5xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
+              <div className="text-center mb-12">
+                <span className="inline-block bg-[#FF9933]/20 text-[#800000] text-lg font-bold px-4 py-1.5 rounded-full mb-3">
+                  လေ့ကျင့်ခန်းများ
+                </span>
+                <h2 className="text-3xl md:text-5xl font-black text-[#800000]">
+                  လေ့ကျင့်မည့် သင်တန်းကို ရွေးချယ်ပါ
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+                <button
+                  onClick={() => handleCourseSelect('diploma')}
+                  className="bg-white hover:bg-[#FAF0E6] text-[#800000] border-4 border-gray-200 hover:border-[#800000] rounded-3xl p-10 md:p-14 shadow-lg hover:shadow-2xl active:scale-[0.98] transition-all flex flex-col items-center justify-center text-center gap-6 cursor-pointer"
+                >
+                  <div className="w-24 h-24 rounded-3xl bg-[#800000]/10 text-[#800000] flex items-center justify-center">
+                    <BookOpenIcon className="w-14 h-14" />
+                  </div>
+                  <span className="text-3xl md:text-4xl font-black">
+                    သုတဓမ္မဒီပလိုမာတန်း
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => handleCourseSelect('ba')}
+                  className="bg-white hover:bg-[#FAF0E6] text-[#800000] border-4 border-gray-200 hover:border-[#800000] rounded-3xl p-10 md:p-14 shadow-lg hover:shadow-2xl active:scale-[0.98] transition-all flex flex-col items-center justify-center text-center gap-6 cursor-pointer"
+                >
+                  <div className="w-24 h-24 rounded-3xl bg-[#800000]/10 text-[#800000] flex items-center justify-center">
+                    <GraduationCapIcon className="w-14 h-14" />
+                  </div>
+                  <span className="text-3xl md:text-4xl font-black">
+                    သုတဓမ္မဝိဇ္ဇာဘွဲ့တန်း
+                  </span>
+                </button>
+              </div>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: CONTACT US (SUPABASE BACKED)                                        */}
+          {/* ========================================================================= */}
+          {currentScreen === 'contact' && (
+            <main className="flex-1 max-w-4xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
+              <div className="mb-6">
+                <button
+                  onClick={() => { setCurrentScreen('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="inline-flex items-center gap-2 text-[#800000] text-2xl font-bold py-2 px-3 rounded-xl hover:bg-[#800000]/10 transition-colors cursor-pointer"
+                >
+                  <ChevronLeftIcon className="w-7 h-7" />
+                  <span>ပင်မစာမျက်နှာသို့</span>
+                </button>
+              </div>
+
+              <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-200 p-8 md:p-12">
+                <div className="max-w-2xl mx-auto space-y-6">
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-[#800000]">
+                      Contact Us
+                    </h2>
+                    <p className="text-gray-500 text-lg mt-1 font-medium">
+                      သင့်မေးမြန်းလိုသည်များနှင့် အကြံပြုချက်များကို ပေးပို့နိုင်ပါသည်။
+                    </p>
+                  </div>
+
+                  {contactSuccess ? (
+                    <div className="bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-8 text-center space-y-3">
+                      <CheckCircleIcon className="w-14 h-14 text-emerald-600 mx-auto" />
+                      <h4 className="text-2xl font-bold text-emerald-800">
+                        ပေးပို့မှုအောင်မြင်ပါသည်
+                      </h4>
+                      <p className="text-emerald-700 text-lg">
+                        သင့်မက်ဆေ့ခ်ျကို လက်ခံရရှိပြီး မကြာမီ အကြောင်းပြန်ပေးပါမည်။
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
+                      {contactError && (
+                        <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-red-700 text-base flex items-center gap-3">
+                          <AlertCircleIcon className="w-6 h-6 shrink-0" />
+                          <span>{contactError}</span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
+                          <input
+                            type="text"
+                            required
+                            value={contactForm.firstName}
+                            onChange={(e) => setContactForm({ ...contactForm, firstName: e.target.value })}
+                            className="w-full p-3.5 text-base border border-gray-300 rounded-xl bg-[#FAF9F6] focus:bg-white focus:border-[#800000] outline-none transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
+                          <input
+                            type="text"
+                            required
+                            value={contactForm.lastName}
+                            onChange={(e) => setContactForm({ ...contactForm, lastName: e.target.value })}
+                            className="w-full p-3.5 text-base border border-gray-300 rounded-xl bg-[#FAF9F6] focus:bg-white focus:border-[#800000] outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                        <input
+                          type="email"
+                          required
+                          value={contactForm.email}
+                          onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                          className="w-full p-3.5 text-base border border-gray-300 rounded-xl bg-[#FAF9F6] focus:bg-white focus:border-[#800000] outline-none transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">What can we help you with?</label>
+                        <textarea
+                          rows="4"
+                          required
+                          value={contactForm.message}
+                          onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                          className="w-full p-3.5 text-base border border-gray-300 rounded-xl bg-[#FAF9F6] focus:bg-white focus:border-[#800000] outline-none transition-all resize-none"
+                        ></textarea>
+                      </div>
+
+                      <div className="pt-2 text-left">
+                        <button
+                          type="submit"
+                          disabled={contactSubmitting}
+                          className="w-full sm:w-auto bg-[#800000] hover:bg-[#660000] active:scale-95 text-white font-bold text-lg px-8 py-3.5 rounded-xl shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          <SendIcon />
+                          <span>{contactSubmitting ? 'ပေးပို့နေပါသည်...' : 'ပေးပို့မည်'}</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: LEVEL SELECTION (DIPLOMA)                                           */}
+          {/* ========================================================================= */}
+          {currentScreen === 'levels' && (
+            <main className="flex-1 max-w-2xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
+              <div className="mb-8">
+                <button
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-2 text-[#800000] text-2xl font-bold py-2 px-3 rounded-xl hover:bg-[#800000]/10 transition-colors cursor-pointer"
+                >
+                  <ChevronLeftIcon className="w-8 h-8" />
+                  <span>နောက်သို့</span>
+                </button>
+              </div>
+
+              <div className="text-center mb-10">
+                <span className="inline-block bg-[#FF9933]/20 text-[#800000] text-lg font-bold px-4 py-1.5 rounded-full mb-3">
+                  သုတဓမ္မ ဒီပလိုမာတန်း
+                </span>
+                <h2 className="text-3xl md:text-5xl font-black text-[#800000]">
+                  Level ရွေးချယ်ပါ
+                </h2>
+              </div>
+
+              <div className="space-y-6">
+                {['Level 1', 'Level 2', 'Level 3'].map((lvl) => (
+                  <button
+                    key={lvl}
+                    onClick={() => handleLevelSelect(lvl)}
+                    className="w-full bg-white hover:bg-[#FAF0E6] text-[#800000] border-4 border-gray-200 hover:border-[#800000] rounded-3xl p-8 shadow-md hover:shadow-2xl active:scale-[0.98] transition-all text-center cursor-pointer"
+                  >
+                    <span className="text-3xl md:text-5xl font-black tracking-wide">
+                      {lvl}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: PART SELECTION (BA)                                                 */}
+          {/* ========================================================================= */}
+          {currentScreen === 'parts' && (
+            <main className="flex-1 max-w-2xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
+              <div className="mb-8">
+                <button
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-2 text-[#800000] text-2xl font-bold py-2 px-3 rounded-xl hover:bg-[#800000]/10 transition-colors cursor-pointer"
+                >
+                  <ChevronLeftIcon className="w-8 h-8" />
+                  <span>နောက်သို့</span>
+                </button>
+              </div>
+
+              <div className="text-center mb-10">
+                <span className="inline-block bg-[#FF9933]/20 text-[#800000] text-lg font-bold px-4 py-1.5 rounded-full mb-3">
+                  သုတဓမ္မ ဝိဇ္ဇာဘွဲ့တန်း
+                </span>
+                <h2 className="text-3xl md:text-5xl font-black text-[#800000]">
+                  Part ရွေးချယ်ပါ
+                </h2>
+              </div>
+
+              <div className="space-y-6">
+                {['Part 1', 'Part 2', 'Part 3'].map((prt) => (
+                  <button
+                    key={prt}
+                    onClick={() => handleLevelSelect(prt)}
+                    className="w-full bg-white hover:bg-[#FAF0E6] text-[#800000] border-4 border-gray-200 hover:border-[#800000] rounded-3xl p-8 shadow-md hover:shadow-2xl active:scale-[0.98] transition-all text-center cursor-pointer"
+                  >
+                    <span className="text-3xl md:text-5xl font-black tracking-wide">
+                      {prt}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: CHAPTER SELECTION SCREEN                                            */}
+          {/* ========================================================================= */}
+          {currentScreen === 'chapters' && (
+            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 flex flex-col justify-start">
+              {/* Back button */}
+              <div className="mb-6">
+                <button
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-2 text-[#800000] text-xl md:text-2xl font-bold py-2 px-3 rounded-xl hover:bg-[#800000]/10 transition-colors cursor-pointer"
+                >
+                  <ChevronLeftIcon className="w-7 h-7" />
+                  <span>နောက်သို့</span>
+                </button>
+              </div>
+
+              {/* Header Title */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 bg-white border-2 border-[#800000]/20 rounded-full px-5 py-1.5 shadow-sm text-lg md:text-xl font-bold text-[#800000] mb-3">
+                  <span>{selectedCourseTitle}</span>
+                  <span className="text-[#FF9933]">•</span>
+                  <span>{selectedLevel}</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black text-[#800000]">
+                  {selectedCourse === 'ba' ? 'လေ့ကျင့်မည့် အပိုင်းများ ရွေးချယ်ပါ' : 'လေ့ကျင့်မည့် အခန်းများ ရွေးချယ်ပါ'}
+                </h2>
+                <p className="text-base md:text-lg text-gray-500 mt-2 font-medium">
+                  မိမိ လေ့ကျင့်လိုသော အခန်းများကို အမှန်ခြစ်၍ ရွေးချယ်နိုင်ပါသည်
+                </p>
+              </div>
+
+              {/* Loading State */}
+              {isChaptersLoading && (
+                <div className="py-20 text-center space-y-4">
+                  <div className="w-16 h-16 border-4 border-[#800000]/20 border-t-[#800000] rounded-full animate-spin mx-auto"></div>
+                  <p className="text-xl font-bold text-[#800000]">
+                    အခန်းများကို စာရင်းရယူနေပါသည်...
+                  </p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {chaptersError && !isChaptersLoading && (
+                <div className="bg-white rounded-3xl p-8 border-2 border-red-200 text-center space-y-4 shadow-lg my-6">
+                  <AlertCircleIcon className="w-12 h-12 text-red-500 mx-auto" />
+                  <p className="text-xl font-bold text-red-600">{chaptersError}</p>
+                  <button
+                    onClick={() => handleLevelSelect(selectedLevel)}
+                    className="bg-[#800000] text-white font-bold text-lg px-6 py-2.5 rounded-xl hover:bg-[#660000] cursor-pointer"
+                  >
+                    ပြန်လည်ရယူမည်
+                  </button>
+                </div>
+              )}
+
+              {/* Loaded Chapters List */}
+              {!isChaptersLoading && !chaptersError && availableChapters.length > 0 && (
+                <div className="space-y-6">
+                  {/* Select All ("အကုန်ဖြေမည်။") Card */}
+                  <div
+                    onClick={() => {
+                      const allSelected = selectedChapters.length === availableChapters.length;
+                      if (allSelected) {
+                        setSelectedChapters([]);
+                      } else {
+                        setSelectedChapters([...availableChapters]);
+                      }
+                    }}
+                    className={`p-5 md:p-6 rounded-3xl border-3 shadow-md flex items-center justify-between cursor-pointer transition-all ${
+                      selectedChapters.length === availableChapters.length
+                        ? 'bg-[#FAF0E6] border-[#800000] ring-4 ring-[#800000]/15'
+                        : 'bg-white border-gray-300 hover:border-[#800000]/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all shrink-0 ${
+                          selectedChapters.length === availableChapters.length
+                            ? 'bg-[#800000] border-[#800000] text-white shadow-sm'
+                            : 'border-gray-400 bg-white'
+                        }`}
+                      >
+                        {selectedChapters.length === availableChapters.length && (
+                          <CheckIcon className="w-5 h-5 text-white" />
+                        )}
+                      </div>
+                      <div>
+                        <span className="text-2xl md:text-3xl font-black text-[#800000] block">
+                          အကုန်ဖြေမည်။
+                        </span>
+                        <span className="text-sm md:text-base font-bold text-gray-500">
+                          အခန်းအားလုံးကို တစ်ပြိုင်နက် ရွေးချယ်ပါမည်
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="text-base md:text-lg font-black text-[#800000] bg-[#800000]/10 px-4 py-1.5 rounded-xl">
+                      {selectedChapters.length} / {availableChapters.length} ခန်း
+                    </span>
+                  </div>
+
+                  {/* Individual Chapter Checkboxes Grid (Large, tap-friendly) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {availableChapters.map((ch) => {
+                      const isChecked = selectedChapters.includes(ch);
+                      const label = formatChapterLabel(ch, selectedCourse);
+                      return (
+                        <div
+                          key={ch}
+                          onClick={() => {
+                            setSelectedChapters((prev) =>
+                              prev.includes(ch)
+                                ? prev.filter((item) => item !== ch)
+                                : [...prev, ch]
+                            );
+                          }}
+                          className={`p-4 md:p-5 rounded-2xl border-2 transition-all flex items-center justify-between cursor-pointer select-none ${
+                            isChecked
+                              ? 'bg-[#FAF0E6] border-[#800000] text-[#800000] shadow-sm ring-2 ring-[#800000]/20'
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span className="text-xl md:text-2xl font-bold flex-1 pr-3 leading-snug">
+                            {label}
+                          </span>
+
+                          <div
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center border-2 transition-all shrink-0 ${
+                              isChecked
+                                ? 'bg-[#800000] border-[#800000] text-white shadow-sm'
+                                : 'border-gray-400 bg-white'
+                            }`}
+                          >
+                            {isChecked && <CheckIcon className="w-4 h-4 text-white" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bottom Warning if None Selected */}
+                  {selectedChapters.length === 0 && (
+                    <p className="text-center text-red-600 font-bold text-lg md:text-xl py-2">
+                      ကျေးဇူးပြု၍ အနည်းဆုံး အခန်း (၁) ခန်း ရွေးချယ်ပေးပါ။
+                    </p>
+                  )}
+
+                  {/* "ရှေ့ဆက်မည်" (Next) Button */}
+                  <div className="pt-4">
+                    <button
+                      onClick={() => {
+                        if (selectedChapters.length > 0) {
+                          setCurrentScreen('count');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                      }}
+                      disabled={selectedChapters.length === 0}
+                      className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed text-white text-2xl md:text-3xl font-extrabold py-5 px-8 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer"
+                    >
+                      <span>ရှေ့ဆက်မည်</span>
+                      <ChevronRightIcon className="w-8 h-8" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: QUESTION COUNT SETUP                                                */}
+          {/* ========================================================================= */}
+          {currentScreen === 'count' && (
+            <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center">
+              <div className="mb-6">
+                <button
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-2 text-[#800000] text-2xl font-bold py-2 px-3 rounded-xl hover:bg-[#800000]/10 transition-colors cursor-pointer"
+                >
+                  <ChevronLeftIcon className="w-8 h-8" />
+                  <span>နောက်သို့</span>
+                </button>
+              </div>
+
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 bg-white border-2 border-[#800000]/20 rounded-full px-6 py-2 shadow-sm text-xl md:text-2xl font-bold text-[#800000]">
+                  <span>{selectedCourseTitle}</span>
+                  <span className="text-[#FF9933]">•</span>
+                  <span>{selectedLevel}</span>
+                </div>
+              </div>
+
+              {/* Stepper Card */}
+              <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-200 p-8 md:p-12 mb-10 flex flex-col items-center text-center">
+                <label className="text-2xl md:text-4xl font-black text-[#800000] mb-8 leading-snug">
+                  မေးခွန်းအရေအတွက်ကို ရွေးချယ်ပါ။
+                </label>
+
+                {/* Pill-shaped Stepper UI */}
+                <div className="inline-flex items-center justify-between gap-6 md:gap-12 bg-[#FAF9F6] border-3 border-[#800000]/25 rounded-full px-6 py-3 md:px-10 md:py-5 shadow-inner">
+                  <button
+                    type="button"
+                    onClick={() => handleStepperChange(-5)}
+                    disabled={questionCount <= 10}
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white hover:bg-gray-100 active:scale-90 text-[#800000] shadow-md border-2 border-gray-200 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    aria-label="Decrease"
+                  >
+                    <MinusIcon />
+                  </button>
+
+                  <div className="min-w-[120px] text-center select-none">
+                    <span className="text-5xl md:text-7xl font-black text-[#800000]">
+                      {questionCount}
+                    </span>
+                    <span className="block text-xl font-bold text-gray-500 mt-1">
+                      ပုဒ်
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleStepperChange(5)}
+                    disabled={questionCount >= 80}
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white hover:bg-gray-100 active:scale-90 text-[#800000] shadow-md border-2 border-gray-200 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    aria-label="Increase"
+                  >
+                    <PlusIcon />
+                  </button>
+                </div>
+
+                <p className="text-lg md:text-xl text-gray-500 mt-6 font-medium">
+                  (အနည်းဆုံး ၁၀ ပုဒ် မှ အများဆုံး ၈၀ ပုဒ် အထိ ရွေးချယ်နိုင်ပါသည်)
+                </p>
+              </div>
+
+              {/* Massive Start Button */}
+              <button
+                onClick={handleStartQuiz}
+                className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.98] text-white text-3xl md:text-4xl font-extrabold py-7 px-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-4 cursor-pointer"
+              >
+                <CheckCircleIcon className="w-10 h-10 text-[#FF9933]" />
+                <span>မေးခွန်းစတင်မည်</span>
+              </button>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: QUIZ SCREEN (PROPORTIONAL FETCH + DELAYED GRADING)                  */}
+          {/* ========================================================================= */}
+          {currentScreen === 'quiz' && (
+            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 flex flex-col justify-start">
+              
+              {/* Loading State */}
+              {quizLoading && (
+                <div className="my-auto py-24 text-center space-y-6">
+                  <div className="w-20 h-20 border-6 border-[#800000]/20 border-t-[#800000] rounded-full animate-spin mx-auto"></div>
+                  <h3 className="text-3xl font-extrabold text-[#800000]">
+                    မေးခွန်းများ စီစဉ်ရယူနေပါသည်...
+                  </h3>
+                  <p className="text-xl text-gray-600">
+                    အခန်းလိုက် မျှတစွာ ရွေးချယ်တွက်ချက်နေပါသည်၊ ကျေးဇူးပြု၍ ခေတ္တစောင့်ဆိုင်းပေးပါ။
+                  </p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {quizError && !quizLoading && (
+                <div className="my-auto bg-white rounded-3xl p-10 shadow-2xl border-2 border-red-200 text-center space-y-6">
+                  <AlertCircleIcon className="w-16 h-16 text-red-500 mx-auto" />
+                  <h3 className="text-3xl font-black text-red-600">
+                    မေးခွန်းများ ရယူရာတွင် အဆင်မပြေပါ
+                  </h3>
+                  <p className="text-xl text-gray-700">{quizError}</p>
+                  <div className="pt-4 flex justify-center gap-4">
+                    <button
+                      onClick={handleStartQuiz}
+                      className="bg-[#800000] text-white text-xl font-bold px-8 py-4 rounded-2xl shadow-lg hover:bg-[#660000] cursor-pointer"
+                    >
+                      ထပ်မံကြိုးစားမည်
+                    </button>
+                    <button
+                      onClick={() => setCurrentScreen('count')}
+                      className="bg-gray-200 text-gray-800 text-xl font-bold px-8 py-4 rounded-2xl hover:bg-gray-300 cursor-pointer"
+                    >
+                      နောက်သို့
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Loaded Quiz Content */}
+              {!quizLoading && !quizError && currentQ && (
+                <div className="space-y-6">
+                  
+                  {/* Top Status & Sticky Progress Bar */}
+                  <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 flex flex-col gap-4">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="inline-flex items-center gap-2 text-lg md:text-xl font-bold text-[#800000]">
+                        <span>{selectedCourseTitle}</span>
+                        <span className="text-[#FF9933]">•</span>
+                        <span>{selectedLevel}</span>
+                      </div>
+
+                      {/* Submit Button in Header */}
+                      <button
+                        onClick={handlePreSubmitQuiz}
+                        className="bg-[#800000] hover:bg-[#660000] text-white font-bold text-base md:text-lg px-6 py-2.5 rounded-full shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <CheckCircleIcon className="w-5 h-5 text-[#FF9933]" />
+                        <span>အဖြေလွှာတင်မည်</span>
+                      </button>
+                    </div>
+
+                    {/* Progress Indicators */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-base md:text-lg font-bold">
+                        <span className="text-[#800000]">
+                          မေးခွန်း {currentQuestionIndex + 1} / {quizQuestions.length}
+                        </span>
+                        <span className="text-gray-500 text-sm md:text-base">
+                          ဖြေဆိုပြီး: {Object.keys(userAnswers).length} ပုဒ် | ကျန်: {quizQuestions.length - Object.keys(userAnswers).length} ပုဒ်
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-[#800000] to-[#FF9933] h-full transition-all duration-300"
+                          style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* TOP NAVIGATION BAR: နောက်သို့၊ ကျော်မည်၊ ရှေ့သို့ / အဖြေလွှာတင်မည် */}
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      onClick={handlePrevQuestion}
+                      disabled={currentQuestionIndex === 0}
+                      className="bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-gray-300 text-gray-800 font-bold text-lg md:text-xl px-5 md:px-7 py-3 rounded-2xl shadow-sm flex items-center gap-2 cursor-pointer transition-all"
+                    >
+                      <ChevronLeftIcon className="w-6 h-6" />
+                      <span>နောက်သို့</span>
+                    </button>
+
+                    <button
+                      onClick={handleSkipQuestion}
+                      disabled={currentQuestionIndex === quizQuestions.length - 1}
+                      className="bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-gray-300 text-gray-600 font-bold text-base md:text-lg px-4 md:px-5 py-3 rounded-2xl shadow-sm cursor-pointer transition-all"
+                    >
+                      <span>ကျော်မည်</span>
+                    </button>
+
+                    {currentQuestionIndex < quizQuestions.length - 1 ? (
+                      <button
+                        onClick={handleNextQuestion}
+                        className="bg-[#800000] hover:bg-[#660000] text-white font-bold text-lg md:text-xl px-6 md:px-8 py-3 rounded-2xl shadow-md flex items-center gap-2 cursor-pointer transition-all"
+                      >
+                        <span>ရှေ့သို့</span>
+                        <ChevronRightIcon className="w-6 h-6" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handlePreSubmitQuiz}
+                        className="bg-[#FF9933] hover:bg-[#e68a00] text-white font-extrabold text-lg md:text-xl px-6 md:px-8 py-3 rounded-2xl shadow-lg flex items-center gap-2 cursor-pointer transition-all animate-pulse"
+                      >
+                        <CheckCircleIcon className="w-6 h-6" />
+                        <span>အဖြေလွှာတင်မည်</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Main Question Card */}
+                  <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-200 p-6 md:p-10 space-y-8">
+                    
+                    {/* Question Header (Excluded အပိုင်း / အခန်း description) */}
+                    <div className="flex items-center justify-between">
+                      <span className="inline-block bg-[#800000]/10 text-[#800000] text-lg font-black px-4 py-1.5 rounded-xl">
+                        မေးခွန်း #{currentQuestionIndex + 1}
+                      </span>
+                      <span className="text-gray-400 font-bold text-base">
+                        {currentQuestionIndex + 1} / {quizQuestions.length}
+                      </span>
+                    </div>
+
+                    <h3 className="text-2xl md:text-3xl font-extrabold text-[#800000] leading-relaxed">
+                      {currentQ.question_text}
+                    </h3>
+
+                    {/* Options List (Delayed Grading - No right/wrong answers shown yet) */}
+                    <div className="space-y-4 pt-2">
+                      {[
+                        { key: 'option_a', text: currentQ.option_a, label: 'A' },
+                        { key: 'option_b', text: currentQ.option_b, label: 'B' },
+                        { key: 'option_c', text: currentQ.option_c, label: 'C' },
+                        { key: 'option_d', text: currentQ.option_d, label: 'D' }
+                      ].map((opt) => {
+                        const isSelected = userAnswers[currentQuestionIndex] === opt.key;
+                        return (
+                          <button
+                            key={opt.key}
+                            onClick={() => handleSelectOption(opt.key)}
+                            className={`w-full text-left p-5 md:p-6 rounded-2xl border-3 transition-all flex items-center gap-5 cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#FAF0E6] border-[#800000] shadow-md ring-4 ring-[#800000]/15'
+                                : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shrink-0 transition-colors ${
+                                isSelected
+                                  ? 'bg-[#800000] text-white'
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {opt.label}
+                            </div>
+
+                            <span className={`text-xl md:text-2xl font-bold leading-normal flex-1 ${
+                              isSelected ? 'text-[#800000]' : 'text-gray-800'
+                            }`}>
+                              {opt.text}
+                            </span>
+
+                            {isSelected && (
+                              <div className="w-8 h-8 rounded-full bg-[#800000] text-white flex items-center justify-center shrink-0">
+                                <CheckIcon className="w-5 h-5 text-white" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Navigation Bar (Next, Previous, Skip) */}
+                  <div className="flex items-center justify-between gap-4 pt-2">
+                    <button
+                      onClick={handlePrevQuestion}
+                      disabled={currentQuestionIndex === 0}
+                      className="bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-gray-300 text-gray-800 font-bold text-xl md:text-2xl px-6 md:px-8 py-4 rounded-2xl shadow-sm flex items-center gap-2 cursor-pointer transition-all"
+                    >
+                      <ChevronLeftIcon className="w-7 h-7" />
+                      <span>နောက်သို့</span>
+                    </button>
+
+                    <button
+                      onClick={handleSkipQuestion}
+                      disabled={currentQuestionIndex === quizQuestions.length - 1}
+                      className="bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-gray-300 text-gray-600 font-bold text-lg md:text-xl px-5 md:px-6 py-4 rounded-2xl shadow-sm cursor-pointer transition-all"
+                    >
+                      <span>ကျော်မည်</span>
+                    </button>
+
+                    {currentQuestionIndex < quizQuestions.length - 1 ? (
+                      <button
+                        onClick={handleNextQuestion}
+                        className="bg-[#800000] hover:bg-[#660000] text-white font-bold text-xl md:text-2xl px-8 md:px-10 py-4 rounded-2xl shadow-md flex items-center gap-2 cursor-pointer transition-all"
+                      >
+                        <span>ရှေ့သို့</span>
+                        <ChevronRightIcon className="w-7 h-7" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handlePreSubmitQuiz}
+                        className="bg-[#FF9933] hover:bg-[#e68a00] text-white font-extrabold text-xl md:text-2xl px-8 md:px-10 py-4 rounded-2xl shadow-lg flex items-center gap-2 cursor-pointer transition-all animate-pulse"
+                      >
+                        <CheckCircleIcon className="w-7 h-7" />
+                        <span>အဖြေလွှာတင်မည်</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Question Navigator Drawer / Jump Grid */}
+                  <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200">
+                    <p className="text-sm md:text-base font-bold text-gray-600 mb-3">
+                      မေးခွန်းများသို့ တိုက်ရိုက်သွားရန်:
+                    </p>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1">
+                      {quizQuestions.map((_, idx) => {
+                        const isAnswered = userAnswers[idx] !== undefined;
+                        const isCurrent = idx === currentQuestionIndex;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => handleJumpToQuestion(idx)}
+                            className={`w-10 h-10 rounded-xl font-bold text-base transition-all cursor-pointer ${
+                              isCurrent
+                                ? 'ring-4 ring-[#800000] bg-[#800000] text-white font-black'
+                                : isAnswered
+                                ? 'bg-[#800000]/15 text-[#800000] border-2 border-[#800000]/30 font-bold'
+                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            }`}
+                          >
+                            {idx + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* SUBMISSION CONFIRMATION MODAL                                             */}
+          {/* ========================================================================= */}
+          {showSubmitConfirmModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 md:p-10 text-center space-y-6 border-2 border-gray-100">
+                <div className="w-16 h-16 rounded-full bg-[#FF9933]/20 text-[#FF9933] flex items-center justify-center mx-auto">
+                  <AlertCircleIcon className="w-10 h-10" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-2xl md:text-3xl font-black text-[#800000]">
+                    အဖြေလွှာ တင်သွင်းရန် အတည်ပြုပါ
+                  </h3>
+                  <p className="text-lg text-gray-600 leading-relaxed">
+                    သင် မဖြေဆိုရသေးသော မေးခွန်း{' '}
+                    <span className="font-black text-red-600">
+                      {quizQuestions.length - Object.keys(userAnswers).length}
+                    </span>{' '}
+                    ပုဒ် ကျန်ရှိနေပါသေးသည်။ အမှန်တကယ် အဖြေလွှာ တင်သွင်းလိုပါသလား။
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    onClick={() => setShowSubmitConfirmModal(false)}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xl font-bold py-4 rounded-xl cursor-pointer"
+                  >
+                    ဆက်လက်ဖြေဆိုမည်
+                  </button>
+                  <button
+                    onClick={executeQuizSubmit}
+                    className="flex-1 bg-[#800000] hover:bg-[#660000] text-white text-xl font-bold py-4 rounded-xl shadow-md cursor-pointer"
+                  >
+                    အဖြေလွှာတင်မည်
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: RESULTS SCREEN (CIRCULAR CHART + STATS + 3 MASSIVE BUTTONS)          */}
+          {/* ========================================================================= */}
+          {currentScreen === 'results' && (
+            <main className="flex-1 max-w-3xl w-full mx-auto p-6 md:p-12 flex flex-col justify-center items-center">
+              <div className="w-full bg-white rounded-3xl shadow-2xl border-4 border-gray-100 p-8 md:p-14 text-center space-y-8">
+                
+                <div>
+                  <img 
+                    src="Suta Logo.png" 
+                    alt="သုတဓမ္မ ဉာဏ်စမ်း Logo" 
+                    className="w-20 h-20 mx-auto mb-3 object-contain drop-shadow" 
+                  />
+                  <span className="inline-block bg-[#FF9933]/20 text-[#800000] text-lg font-bold px-5 py-2 rounded-full mb-2">
+                    {selectedCourseTitle} • {selectedLevel}
+                  </span>
+                  <h2 className="text-3xl md:text-5xl font-black text-[#800000]">
+                    ဉာဏ်စမ်း ရလဒ်အဖြေလွှာ
+                  </h2>
+                </div>
+
+                {/* Circular Percentage Progress Chart (Pure SVG) */}
+                <div className="relative w-56 h-56 mx-auto flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="80"
+                      className="text-gray-100"
+                      strokeWidth="16"
+                      stroke="currentColor"
+                      fill="transparent"
+                    />
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="80"
+                      stroke={
+                        quizScore.percentage >= 80
+                          ? '#10B981'
+                          : quizScore.percentage >= 50
+                          ? '#FF9933'
+                          : '#800000'
+                      }
+                      strokeWidth="16"
+                      strokeDasharray="502.65"
+                      strokeDashoffset={502.65 - (quizScore.percentage / 100) * 502.65}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
+
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-5xl md:text-6xl font-black text-[#800000] tracking-tight">
+                      {quizScore.percentage}%
+                    </span>
+                    <span className="text-sm font-bold text-gray-500 mt-1">
+                      {quizScore.percentage >= 80
+                        ? 'ထူးချွန်စွာ အောင်မြင်ပါသည်'
+                        : quizScore.percentage >= 50
+                        ? 'အောင်မြင်ပါသည်'
+                        : 'ထပ်မံကြိုးစားပါ'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-3xl md:text-4xl font-black text-[#800000]">
+                    {quizScore.correct} / {quizScore.total} ပုဒ် မှန်ကန်ပါသည်
+                  </p>
+                  <p className="text-lg text-gray-500 font-medium">
+                    (မှန်ကန်သော အမှတ်ပေါင်း {quizScore.correct} ပုဒ်၊ မှားယွင်းမှု {quizScore.total - quizScore.correct - quizScore.unanswered} ပုဒ်၊ မဖြေဆိုခဲ့မှု {quizScore.unanswered} ပုဒ်)
+                  </p>
+                </div>
+
+                {/* Dynamic Polite Post-Quiz Feedback Message */}
+                <div className={`p-5 md:p-6 rounded-2xl border-2 text-center transition-all ${
+                  quizScore.percentage >= 80
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : quizScore.percentage >= 50
+                    ? 'bg-amber-50 border-amber-300 text-amber-900'
+                    : 'bg-rose-50 border-rose-300 text-rose-900'
+                }`}>
+                  <p className="text-xl md:text-2xl font-bold leading-relaxed">
+                    {quizScore.percentage >= 80
+                      ? 'ဂုဏ်ယူပါသည်၊ အလွန်ကောင်းမွန်သော ရလဒ်ဖြစ်ပါသည်။ ဆက်လက် ကြိုးစားပါ။'
+                      : quizScore.percentage >= 50
+                      ? 'ကောင်းမွန်ပါသည်။ လိုအပ်သည်များကို ထပ်မံလေ့လာနိုင်ပါသည်။'
+                      : 'အားမလျှော့ပါနှင့်။ အဖြေများကိုပြန်စစ်ပြီး ထပ်မံကြိုးစားကြည့်ပါ။'}
+                  </p>
+                </div>
+
+                {/* Three Massive Buttons */}
+                <div className="space-y-4 pt-4">
+                  <button
+                    onClick={handleReviewQuiz}
+                    className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.98] text-white text-2xl md:text-3xl font-black py-6 px-8 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-4 cursor-pointer"
+                  >
+                    <BookOpenIcon className="w-8 h-8 text-[#FF9933]" />
+                    <span>အဖြေများပြန်စစ်ရန်</span>
+                  </button>
+
+                  <button
+                    onClick={handleStartQuiz}
+                    className="w-full bg-[#FF9933] hover:bg-[#e68a00] active:scale-[0.98] text-white text-2xl md:text-3xl font-black py-6 px-8 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-4 cursor-pointer"
+                  >
+                    <RotateCcwIcon className="w-8 h-8 text-white" />
+                    <span>ထပ်မံဖြေဆိုမည်</span>
+                  </button>
+
+                  <button
+                    onClick={handleExitQuiz}
+                    className="w-full bg-white hover:bg-gray-100 active:scale-[0.98] text-gray-800 border-2 border-gray-300 text-2xl md:text-3xl font-bold py-5 px-8 rounded-2xl shadow-md transition-all flex items-center justify-center gap-4 cursor-pointer"
+                  >
+                    <HomeIcon className="w-8 h-8 text-gray-500" />
+                    <span>ထွက်မည်</span>
+                  </button>
+                </div>
+
+              </div>
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* VIEW: REVIEW SCREEN (CHECK ANSWERS & EXPLANATIONS)                        */}
+          {/* ========================================================================= */}
+          {currentScreen === 'review' && reviewQ && (
+            <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-8 flex flex-col justify-start space-y-6">
+              
+              <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <span className="text-lg md:text-xl font-bold text-[#800000] block">
+                    အဖြေများ ပြန်လည်စစ်ဆေးခြင်း
+                  </span>
+                  <span className="text-sm font-semibold text-gray-500">
+                    မေးခွန်း {reviewQuestionIndex + 1} / {quizQuestions.length}
+                  </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCurrentScreen('results')}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-base md:text-lg px-5 py-2 rounded-xl transition-all cursor-pointer"
+                  >
+                    ရလဒ်သို့
+                  </button>
+                  <button
+                    onClick={handleExitQuiz}
+                    className="bg-[#800000] hover:bg-[#660000] text-white font-bold text-base md:text-lg px-5 py-2 rounded-xl transition-all cursor-pointer"
+                  >
+                    ထွက်မည်
+                  </button>
+                </div>
+              </div>
+
+              {/* TOP REVIEW NAVIGATION BUTTONS: ရှေ့မေးခွန်းသို့ & နောက်မေးခွန်းသို့ */}
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => {
+                    if (reviewQuestionIndex > 0) {
+                      setReviewQuestionIndex((prev) => prev - 1);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  disabled={reviewQuestionIndex === 0}
+                  className="bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-gray-300 text-gray-800 font-bold text-lg md:text-xl px-6 py-3.5 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition-all"
+                >
+                  <ChevronLeftIcon className="w-6 h-6" />
+                  <span>ရှေ့မေးခွန်းသို့</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (reviewQuestionIndex < quizQuestions.length - 1) {
+                      setReviewQuestionIndex((prev) => prev + 1);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  disabled={reviewQuestionIndex === quizQuestions.length - 1}
+                  className="bg-[#800000] hover:bg-[#660000] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-lg md:text-xl px-6 py-3.5 rounded-xl shadow-md flex items-center gap-2 cursor-pointer transition-all"
+                >
+                  <span>နောက်မေးခွန်းသို့</span>
+                  <ChevronRightIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Question Review Card */}
+              <div className="bg-white rounded-3xl shadow-xl border-2 border-gray-200 p-6 md:p-10 space-y-8">
+                <div className="flex items-center justify-between">
+                  {/* Question Index Badge (Excluded အပိုင်း / အခန်း description) */}
+                  <span className="inline-block bg-[#800000]/10 text-[#800000] text-lg font-black px-4 py-1.5 rounded-xl">
+                    မေးခွန်း #{reviewQuestionIndex + 1}
+                  </span>
+                  
+                  {userAnswers[reviewQuestionIndex] === reviewQ.correct_option ? (
+                    <span className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-base md:text-lg font-bold px-4 py-1.5 rounded-xl">
+                      <CheckIcon className="w-5 h-5 text-emerald-800" />
+                      <span>မှန်ကန်ပါသည်</span>
+                    </span>
+                  ) : userAnswers[reviewQuestionIndex] ? (
+                    <span className="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-base md:text-lg font-bold px-4 py-1.5 rounded-xl">
+                      <XIcon className="w-5 h-5 text-red-800" />
+                      <span>မှားယွင်းပါသည်</span>
+                    </span>
+                  ) : (
+                    <span className="inline-block bg-gray-100 text-gray-600 text-base md:text-lg font-bold px-4 py-1.5 rounded-xl">
+                      မဖြေဆိုခဲ့ပါ
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="text-2xl md:text-3xl font-extrabold text-[#800000] leading-relaxed">
+                  {reviewQ.question_text}
+                </h3>
+
+                {/* Options with Detailed Right/Wrong Highlighting */}
+                <div className="space-y-4">
+                  {[
+                    { key: 'option_a', text: reviewQ.option_a, label: 'A' },
+                    { key: 'option_b', text: reviewQ.option_b, label: 'B' },
+                    { key: 'option_c', text: reviewQ.option_c, label: 'C' },
+                    { key: 'option_d', text: reviewQ.option_d, label: 'D' }
+                  ].map((opt) => {
+                    const isCorrect = reviewQ.correct_option === opt.key;
+                    const isUserChoice = userAnswers[reviewQuestionIndex] === opt.key;
+
+                    let cardStyle = 'bg-white border-gray-200 text-gray-700';
+                    let badgeStyle = 'bg-gray-100 text-gray-700';
+
+                    if (isCorrect) {
+                      cardStyle = 'bg-emerald-50 border-emerald-500 shadow-sm ring-2 ring-emerald-200';
+                      badgeStyle = 'bg-emerald-600 text-white';
+                    } else if (isUserChoice && !isCorrect) {
+                      cardStyle = 'bg-red-50 border-red-500 shadow-sm ring-2 ring-red-200';
+                      badgeStyle = 'bg-red-600 text-white';
+                    }
+
+                    return (
+                      <div
+                        key={opt.key}
+                        className={`p-5 md:p-6 rounded-2xl border-3 flex items-center justify-between gap-4 transition-all ${cardStyle}`}
+                      >
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shrink-0 ${badgeStyle}`}>
+                            {opt.label}
+                          </div>
+                          <span className="text-xl md:text-2xl font-bold leading-normal">
+                            {opt.text}
+                          </span>
+                        </div>
+
+                        <div className="shrink-0 flex items-center gap-2">
+                          {isCorrect && (
+                            <span className="inline-flex items-center gap-1 bg-emerald-600 text-white text-sm md:text-base font-bold px-3 py-1.5 rounded-lg">
+                              <CheckIcon className="w-4 h-4 text-white" />
+                              <span>မှန်ကန်သော အဖြေ</span>
+                            </span>
+                          )}
+                          {isUserChoice && !isCorrect && (
+                            <span className="inline-flex items-center gap-1 bg-red-600 text-white text-sm md:text-base font-bold px-3 py-1.5 rounded-lg">
+                              <XIcon className="w-4 h-4 text-white" />
+                              <span>သင်ရွေးချယ်ခဲ့သော အဖြေ</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Explanation Section */}
+                {reviewQ.explanation && (
+                  <div className="bg-[#FAF0E6] border-2 border-[#800000]/20 rounded-2xl p-6 md:p-8 space-y-2">
+                    <span className="text-lg md:text-xl font-bold text-[#800000] flex items-center gap-2">
+                      <SparklesIcon />
+                      <span>ရှင်းလင်းချက်:</span>
+                    </span>
+                    <p className="text-xl md:text-2xl text-gray-800 leading-relaxed font-medium">
+                      {reviewQ.explanation}
+                    </p>
+                  </div>
+                )}
+
+                {/* Stepper buttons for review */}
+                <div className="flex items-center justify-between pt-4">
+                  <button
+                    onClick={() => {
+                      if (reviewQuestionIndex > 0) {
+                        setReviewQuestionIndex((prev) => prev - 1);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    disabled={reviewQuestionIndex === 0}
+                    className="bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed border-2 border-gray-300 font-bold text-xl px-6 py-3.5 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer"
+                  >
+                    <ChevronLeftIcon className="w-6 h-6" />
+                    <span>ရှေ့မေးခွန်းသို့</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (reviewQuestionIndex < quizQuestions.length - 1) {
+                        setReviewQuestionIndex((prev) => prev + 1);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                    disabled={reviewQuestionIndex === quizQuestions.length - 1}
+                    className="bg-[#800000] hover:bg-[#660000] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xl px-6 py-3.5 rounded-xl shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>နောက်မေးခွန်းသို့</span>
+                    <ChevronRightIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Jump Bar in Review Mode */}
+              <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200">
+                <p className="text-sm md:text-base font-bold text-gray-600 mb-3">
+                  မေးခွန်းများသို့ တိုက်ရိုက်ရွေးချယ်ရန် (အစိမ်းရောင်: မှန်၊ အနီရောင်: မှား၊ မီးခိုးရောင်: မဖြေ):
+                </p>
+                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1">
+                  {quizQuestions.map((q, idx) => {
+                    const isCorrect = userAnswers[idx] === q.correct_option;
+                    const isAnswered = userAnswers[idx] !== undefined;
+                    const isCurrent = idx === reviewQuestionIndex;
+
+                    let pillColor = 'bg-gray-200 text-gray-700';
+                    if (isAnswered) {
+                      pillColor = isCorrect ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white';
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setReviewQuestionIndex(idx);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`w-10 h-10 rounded-xl font-bold text-base transition-all cursor-pointer ${pillColor} ${
+                          isCurrent ? 'ring-4 ring-offset-2 ring-[#800000] scale-110 font-black' : ''
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </main>
+          )}
+
+          {/* ========================================================================= */}
+          {/* AUTH MODAL (LOGIN / SIGN UP FLOW VIA SUPABASE AUTH)                       */}
+          {/* ========================================================================= */}
+          {showAuthModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+              <div className="bg-[#FAF9F6] rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-10 relative border-2 border-gray-200 my-8">
+                {/* Close Button */}
+                <button
+                  onClick={() => {
+                    setShowAuthModal(false);
+                    setAuthError('');
+                    setAuthSuccess('');
+                  }}
+                  className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200 cursor-pointer"
+                  aria-label="Close"
+                >
+                  <XIcon />
+                </button>
+
+                {/* Logo & Header */}
+                <div className="text-center mb-6">
+                  <img 
+                    src="Suta Logo.png" 
+                    alt="သုတဓမ္မ ဉာဏ်စမ်း Logo" 
+                    className="w-20 h-20 mx-auto mb-3 object-contain drop-shadow" 
+                  />
+                  <h2 className="text-3xl sm:text-4xl font-black text-[#800000]">
+                    {authMode === 'login' ? 'အကောင့်ဝင်ရန်' : 'အကောင့်အသစ်ဖွင့်ရန်'}
+                  </h2>
+                  <p className="text-gray-500 text-base sm:text-lg mt-1">
+                    (မှတ်စု: ဉာဏ်စမ်းလေ့ကျင့်ရန် အကောင့်ဝင်ရန် မလိုအပ်ပါ)
+                  </p>
+                </div>
+
+                {/* Mode Switch Tabs */}
+                <div className="flex bg-gray-200/80 p-1.5 rounded-2xl mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('login');
+                      setAuthError('');
+                      setAuthSuccess('');
+                    }}
+                    className={`flex-1 py-3 text-lg sm:text-xl font-bold rounded-xl transition-all cursor-pointer ${
+                      authMode === 'login'
+                        ? 'bg-[#800000] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    ဝင်မည် (Log In)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setAuthError('');
+                      setAuthSuccess('');
+                    }}
+                    className={`flex-1 py-3 text-lg sm:text-xl font-bold rounded-xl transition-all cursor-pointer ${
+                      authMode === 'signup'
+                        ? 'bg-[#800000] text-white shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    အကောင့်ဖွင့်မည် (Sign Up)
+                  </button>
+                </div>
+
+                {/* Error & Success Messages */}
+                {authError && (
+                  <div className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-300 text-red-800 text-lg flex items-center gap-3">
+                    <AlertCircleIcon className="w-6 h-6 shrink-0 text-red-600" />
+                    <span>{authError}</span>
+                  </div>
+                )}
+                {authSuccess && (
+                  <div className="mb-6 p-4 rounded-2xl bg-green-50 border-2 border-green-300 text-green-800 text-lg flex items-center gap-3">
+                    <CheckCircleIcon className="w-6 h-6 shrink-0 text-green-600" />
+                    <span>{authSuccess}</span>
+                  </div>
+                )}
+
+                {/* 1. Log In Form */}
+                {authMode === 'login' ? (
+                  <form onSubmit={handleLoginSubmit} className="space-y-5">
+                    <div>
+                      <label className="block text-xl font-bold text-gray-800 mb-2">
+                        အီးမေးလ် (Email)
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                        placeholder="example@gmail.com"
+                        className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xl font-bold text-gray-800 mb-2">
+                        စကားဝှက် (Password)
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.99] text-white py-5 px-6 rounded-2xl text-2xl font-black shadow-xl transition-all cursor-pointer mt-2 disabled:opacity-50"
+                    >
+                      {authLoading ? 'စစ်ဆေးနေပါသည်...' : 'ဝင်မည်'}
+                    </button>
+
+                    <p className="text-center text-lg text-gray-600 pt-2">
+                      အကောင့်မရှိသေးပါက{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setAuthError('');
+                          setAuthSuccess('');
+                        }}
+                        className="text-[#800000] font-bold underline hover:text-[#660000] cursor-pointer"
+                      >
+                        အကောင့်ဖွင့်မည်
+                      </button>
+                    </p>
+                  </form>
+                ) : (
+                  /* 2. Sign Up Form */
+                  <form onSubmit={handleSignUpSubmit} className="space-y-5">
+                    <div>
+                      <label className="block text-xl font-bold text-gray-800 mb-2">
+                        အီးမေးလ် (Email)
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        placeholder="example@gmail.com"
+                        className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xl font-bold text-gray-800 mb-2">
+                        စကားဝှက် (Password)
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={signupPassword}
+                        onChange={(e) => setSignupPassword(e.target.value)}
+                        placeholder="အနည်းဆုံး ၆ လုံး"
+                        className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xl font-bold text-gray-800 mb-2">
+                        စကားဝှက် အတည်ပြုရန် (Confirm Password)
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={signupConfirmPassword}
+                        onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                        placeholder="စကားဝှက်ကို ထပ်မံရိုက်ထည့်ပါ"
+                        className="w-full p-4 sm:p-5 text-xl bg-white border-2 border-gray-300 rounded-2xl outline-none focus:border-[#800000] focus:ring-4 focus:ring-[#800000]/10 transition-all font-medium"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={authLoading}
+                      className="w-full bg-[#800000] hover:bg-[#660000] active:scale-[0.99] text-white py-5 px-6 rounded-2xl text-2xl font-black shadow-xl transition-all cursor-pointer mt-2 disabled:opacity-50"
+                    >
+                      {authLoading ? 'လုပ်ဆောင်နေပါသည်...' : 'အကောင့်ဖွင့်မည်'}
+                    </button>
+
+                    <p className="text-center text-lg text-gray-600 pt-2">
+                      အကောင့်ရှိပြီးသားဖြစ်ပါက{' '}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthMode('login');
+                          setAuthError('');
+                          setAuthSuccess('');
+                        }}
+                        className="text-[#800000] font-bold underline hover:text-[#660000] cursor-pointer"
+                      >
+                        ဝင်မည်
+                      </button>
+                    </p>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* FOOTER (DISPLAYED ON EVERY PAGE)                                          */}
+          {/* ========================================================================= */}
+          <footer className="bg-white text-gray-500 py-4 px-6 text-center text-xs md:text-sm border-t border-gray-200 mt-auto">
+            <div className="max-w-6xl mx-auto flex items-center justify-center gap-2.5">
+              <img src="Suta Logo.png" alt="Suta Logo" className="w-5 h-5 object-contain inline-block opacity-80" />
+              <p className="text-gray-500">
+                © 2026 သုတဓမ္မ ဉာဏ်စမ်း (Sutadhama Quizzie), developed by{' '}
+                <a 
+                  href="https://github.com/Sociopath345/sutadhama-quzzie" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#800000] hover:underline"
+                >
+                  Sociopath345
+                </a>
+              </p>
+            </div>
+          </footer>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

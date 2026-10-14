@@ -2,13 +2,16 @@
 .env
 .env.*
 *.env
+backend/.env
 
 # Question data and PDF syllabi (already stored in Supabase Cloud)
+data/
 *.pdf
 *.json
 backup_json_original/
 
-# Python extraction, processing scripts, and cache
+# Backend extraction and processing scripts
+backend/
 *.py
 *.pyc
 __pycache__/

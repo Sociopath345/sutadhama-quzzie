@@ -54,6 +54,28 @@
 
 ---
 
+### 📁 ပရောဂျက် တည်ဆောက်ပုံ (Project Structure)
+
+```text
+sutadhama-quzzie/
+├── frontend/             # Single-Page Web App, React Source & Assets
+│   ├── App.jsx           # Main React Application
+│   ├── index.html        # Browser UI (Tailwind CSS, React 18, Supabase)
+│   └── Suta Logo.png     # App Logo Asset
+├── backend/              # Database migrations & Python scripts (local)
+│   ├── create_feedbacks_table.sql
+│   ├── update_supabase_chapters.sql
+│   └── upload_to_supabase.py / extractors
+├── data/                 # Original syllabus PDFs & JSON data (local)
+│   ├── pdf/              # BA & Diploma exam curriculum PDFs
+│   └── json/             # 3,700+ extracted questions (synced to Supabase)
+├── index.html            # Root launcher (auto-redirect to frontend/index.html)
+├── README.md             # Project documentation
+└── .gitignore            # Git ignore configuration
+```
+
+---
+
 ### 📖 ဆက်စပ် ဓမ္မစာအုပ်များ ဖတ်ရှုရန်
 သုတဓမ္မ သင်ရိုးစာအုပ်များ၊ မာတိကာများနှင့် တရားတော်များကို [Dhamma Download](https://dhammadownload.com/) ဝက်ဘ်ဆိုက်တွင် လွတ်လပ်စွာ ရယူဖတ်ရှုနိုင်ပါသည်။
 
