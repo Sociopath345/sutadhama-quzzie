@@ -1,4 +1,4 @@
-import { sortChapters } from '../utils/formatters';
+import { sortChapters } from '../utils/formatters.js';
 
 // In-memory cache for loaded question files
 const questionsCache = {};
