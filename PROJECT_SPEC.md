@@ -58,8 +58,10 @@ The platform features 3,685 questions categorized by course, level, and chapter,
   - **Proportional Sampling Engine:** Runs client-side in `questionService.js`, delivering instant (0ms) question generation, balanced chapter distribution, and randomized choice orders with zero server latency.
 - **Contact Us Delivery:**
   - Directly dispatches feedback to `sutadhamaquizzes@gmail.com` via FormSubmit API with a native `mailto:` fallback.
-- **Authentication:**
-  - Supabase Auth removed. Client-side local session management (`localStorage`) allows users to log in or register locally without VPN or external server dependencies.
+- **Authentication & Email Verification:**
+  - Supabase Auth removed. Replaced with EmailJS 6-digit OTP email verification and client-side session management (`localStorage`).
+  - When users register, a secure 6-digit OTP code is generated and dispatched to their email inbox via EmailJS (`@emailjs/browser`).
+  - Users enter the OTP code on the interactive 6-digit PIN verification modal. Upon matching, their account is verified and activated without requiring Supabase or external VPN.
 
 ### 2.3 Hosting & CI/CD
 - **Hosting Provider:** Vercel SPA (`dist/` build directory).
