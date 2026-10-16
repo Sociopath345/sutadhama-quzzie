@@ -16,11 +16,14 @@ yarn-debug.log*
 !.env.example
 backend/.env
 
-# Large raw PDF files
-data/pdf/
-backup_json_original/
+# Local-only editor specifications
+PROJECT_SPEC.md
 
-# Python cache
+# Offline source data & extractor tools
+backend/
+data/
+
+# Python cache & venv
 __pycache__/
 *.pyc
 venv/
