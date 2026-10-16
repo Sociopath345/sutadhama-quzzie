@@ -1,26 +1,29 @@
+# Dependencies and builds
+node_modules
+dist
+dist-ssr
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
 # Environment and sensitive keys
 .env
 .env.*
 *.env
 backend/.env
 
-# Question data and PDF syllabi (already stored in Supabase Cloud)
-data/
-*.pdf
-*.json
-!vercel.json
+# Large raw PDF files
+data/pdf/
 backup_json_original/
 
-# Backend extraction and processing scripts
-backend/
-*.py
-*.pyc
+# Python cache
 __pycache__/
+*.pyc
 venv/
 .venv/
-
-# Database migration scripts (already executed in Supabase)
-*.sql
 
 # System / IDE artifacts
 .DS_Store
