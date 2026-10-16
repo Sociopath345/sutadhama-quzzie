@@ -161,7 +161,7 @@ sutadhama-quzzie/
 ### 🤝 ဆက်သွယ်ရန်နှင့် မူပိုင်ခွင့်
 
 - **GitHub Repository**: [https://github.com/Sociopath345/sutadhama-quzzie](https://github.com/Sociopath345/sutadhama-quzzie)
-- **Developer**: [Sociopath345](https://github.com/Sociopath345)
+- **Developer**: Sociopath345
 - **Email**: [sutadhamaquizzes@gmail.com](mailto:sutadhamaquizzes@gmail.com)
 
 ---

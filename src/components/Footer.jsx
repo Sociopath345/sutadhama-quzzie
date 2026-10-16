@@ -6,15 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto flex items-center justify-center gap-2.5">
         <img src="/Suta Logo.png" alt="Suta Logo" className="w-5 h-5 object-contain inline-block opacity-80" />
         <p className="text-gray-500">
-          © 2026 သုတဓမ္မ ဉာဏ်စမ်း (Suta Dhama Quizzes), developed by{' '}
-          <a
-            href="https://github.com/Sociopath345/sutadhama-quzzie"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-[#800000] hover:underline"
-          >
-            Sociopath345
-          </a>
+          © 2026 သုတဓမ္မ ဉာဏ်စမ်း (Suta Dhama Quizzes), developed by Sociopath345
         </p>
       </div>
     </footer>
